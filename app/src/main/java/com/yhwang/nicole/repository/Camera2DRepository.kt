@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.theapache64.removebg.RemoveBg
 import com.theapache64.removebg.utils.ErrorResponse
@@ -44,13 +43,15 @@ class Camera2DRepository(private val context: Context) {
         if (Build.VERSION.SDK_INT >= 29) {
             val values = contentValues()
             values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
-            values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/RemoveBg")
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Goods")
+            values.put(MediaStore.Video.Media.DISPLAY_NAME, System.currentTimeMillis().toString() + ".jpg")
             values.put(MediaStore.Images.Media.IS_PENDING, true)
             // RELATIVE_PATH and IS_PENDING are introduced in API 29.
 
             val uri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
             if (uri != null) {
                 saveImageToStream(bitmap, context.contentResolver.openOutputStream(uri))
+                Timber.d("uri %s", uri.path)
                 values.put(MediaStore.Images.Media.IS_PENDING, false)
                 context.contentResolver.update(uri, values, null, null)
             }

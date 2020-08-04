@@ -22,6 +22,7 @@ import androidx.core.os.postDelayed
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
+import androidx.navigation.findNavController
 import com.easystudio.rotateimageview.RotateZoomImageView
 import com.otaliastudios.cameraview.CameraListener
 import com.otaliastudios.cameraview.CameraView
@@ -31,13 +32,15 @@ import com.yhwang.nicole.R
 import com.yhwang.nicole.utilities.InjectorUtils
 import com.yhwang.nicole.viewModel.Camera2DViewModel
 import kotlinx.android.synthetic.main.fragment_camera_2d.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 
 @SuppressLint("ClickableViewAccessibility")
 class Camera2DFragment : Fragment() {
 
-    var currentMode = Mode.RemoveBg
+    var currentMode = Mode.ScreenShot
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -56,13 +59,7 @@ class Camera2DFragment : Fragment() {
                                 viewModel.getNoBgBitMap(bitmap)
                             }
                             Mode.ScreenShot -> {
-                                viewModel.saveScreenShot(createScreenShotBitmap(draggable_layer_RelativeLayout, bitmap)) {
-                                    requireActivity().runOnUiThread {
-                                        take_Button.text = "去背"
-                                        draggable_layer_RelativeLayout.removeAllViews()
-                                        draggable_layer_RelativeLayout.background = null
-                                    }
-                                }
+                                saveScreenShot(draggable_layer_RelativeLayout, bitmap)
                             }
                         }
                     }
@@ -94,7 +91,7 @@ class Camera2DFragment : Fragment() {
         viewModel.noBgBitmap.observe(viewLifecycleOwner) { bitmap ->
             Toast.makeText(requireContext(), "去背完成", Toast.LENGTH_SHORT).show()
             Handler(Looper.getMainLooper()).postDelayed({
-                Toast.makeText(requireContext(), "按下截圖並儲存至\"RemoveBg\"相簿", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "按下截圖並儲存至\"Goods\"相簿", Toast.LENGTH_LONG).show()
             }, 2000)
             take_Button.text = "截圖"
             val rotateZoomImageView = RotateZoomImageView(requireContext())
@@ -139,12 +136,20 @@ class Camera2DFragment : Fragment() {
         ScreenShot
     }
 
-    private fun createScreenShotBitmap(view: View, bitmap: Bitmap) : Bitmap {
-        view.background = BitmapDrawable(resources, bitmap)
+    private fun saveScreenShot(view: View, bitmap: Bitmap) {
         Toast.makeText(requireContext(), "儲存截圖至相簿後將重置畫面", Toast.LENGTH_LONG).show()
+        view.background = BitmapDrawable(resources, bitmap)
         val screenBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(screenBitmap)
         view.draw(canvas)
-        return screenBitmap
+        Thread {
+            viewModel.saveScreenShot(bitmap) {
+                requireActivity().runOnUiThread {
+                    take_Button.text = "去背"
+                    draggable_layer_RelativeLayout.removeAllViews()
+                    draggable_layer_RelativeLayout.background = null
+                }
+            }
+        }.start()
     }
 }

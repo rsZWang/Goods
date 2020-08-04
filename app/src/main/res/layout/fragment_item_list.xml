@@ -6,14 +6,4 @@
     android:layout_height="match_parent"
     tools:context=".view.ItemListFragment">
 
-    <Button
-        android:id="@+id/to_camera_fragment_Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TO CAMERA FRAGMENT"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>
