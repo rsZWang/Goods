@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.yhwang.nicole.repository.ItemListRepository
 
 class ItemListViewModel(
-    private val repository: ItemListRepository
+    repository: ItemListRepository
 ) : ViewModel() {
-
+    val itemDrawableList = repository.getItemDrawableImage()
 }

@@ -14,8 +14,8 @@ object InjectorUtils {
         return Camera2DViewModelFactory(repository)
     }
 
-    fun provideItemListViewModeFactory() : ItemListViewModelFactory {
-        val repository = ItemListRepository()
+    fun provideItemListViewModeFactory(context: Context) : ItemListViewModelFactory {
+        val repository = ItemListRepository(context)
         return ItemListViewModelFactory(repository)
     }
 }
