@@ -7,4 +7,5 @@ class ItemListViewModel(
     repository: ItemListRepository
 ) : ViewModel() {
     val itemDrawableList = repository.getItemDrawableImage()
+    val itemList = repository.getItemImages()
 }

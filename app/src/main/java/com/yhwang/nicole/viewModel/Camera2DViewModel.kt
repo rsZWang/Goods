@@ -14,7 +14,11 @@ class Camera2DViewModel(
         repository.getRemoveBgBitmap(noBgBitmap, bitmap)
     }
 
-    fun saveScreenShot(bitmap: Bitmap, callback: ()->Unit) {
-        repository.saveBitmapToJpg(bitmap, callback)
-    }
+    fun saveScreenShot(bitmap: Bitmap, callback: ()->Unit) =
+        repository.saveBitmapToGallery(bitmap, callback)
+
+
+    fun saveItem(item: Bitmap, x: Float, y: Float, background: Bitmap, callback: () -> Unit) =
+        repository.saveItem(item, x, y, background, callback)
+
 }

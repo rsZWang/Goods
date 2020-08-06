@@ -3,9 +3,7 @@ package com.yhwang.nicole.view
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
+import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
@@ -18,29 +16,25 @@ import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat.checkSelfPermission
-import androidx.core.os.postDelayed
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import androidx.navigation.findNavController
 import com.easystudio.rotateimageview.RotateZoomImageView
 import com.otaliastudios.cameraview.CameraListener
 import com.otaliastudios.cameraview.CameraView
 import com.otaliastudios.cameraview.PictureResult
-import com.yhwang.nicole.BuildConfig
 import com.yhwang.nicole.R
+import com.yhwang.nicole.model.Item
 import com.yhwang.nicole.utilities.InjectorUtils
 import com.yhwang.nicole.viewModel.Camera2DViewModel
 import kotlinx.android.synthetic.main.fragment_camera_2d.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 
 @SuppressLint("ClickableViewAccessibility")
 class Camera2DFragment : Fragment() {
 
-    var currentMode = Mode.ScreenShot
+    var currentMode = Mode.RemoveBg
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -59,7 +53,10 @@ class Camera2DFragment : Fragment() {
                                 viewModel.getNoBgBitMap(bitmap)
                             }
                             Mode.ScreenShot -> {
-                                saveScreenShot(draggable_layer_RelativeLayout, bitmap)
+//                                saveScreenShot(draggable_layer_RelativeLayout, bitmap)
+                                Thread {
+                                    saveScreenItem(bitmap)
+                                }.start()
                             }
                         }
                     }
@@ -76,26 +73,22 @@ class Camera2DFragment : Fragment() {
 
     private lateinit var cameraView: CameraView
     private val viewModel: Camera2DViewModel by viewModels {
-        InjectorUtils.provideCamera2DViewModeFactory(requireContext())
+        InjectorUtils.provideCamera2DViewModelFactory(requireContext())
     }
 
+    lateinit var rotateZoomImageView: RotateZoomImageView
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        rotateZoomImageView.setOnTouchListener { view, motionEvent ->
-//            rotateZoomImageView.onTouch(view, motionEvent)
-//        }
-//        if (Build.VERSION.SDK_INT >= 24){
-//            View.DragShadowBuilder(rotateZoomImageView)
-//        }
         cameraView.setLifecycleOwner(viewLifecycleOwner)
         viewModel.noBgBitmap.observe(viewLifecycleOwner) { bitmap ->
+            val borderBitmap = drawOutline(bitmap)
             Toast.makeText(requireContext(), "去背完成", Toast.LENGTH_SHORT).show()
             Handler(Looper.getMainLooper()).postDelayed({
                 Toast.makeText(requireContext(), "按下截圖並儲存至\"Goods\"相簿", Toast.LENGTH_LONG).show()
             }, 2000)
             take_Button.text = "截圖"
-            val rotateZoomImageView = RotateZoomImageView(requireContext())
-            rotateZoomImageView.setImageBitmap(bitmap)
+            rotateZoomImageView = RotateZoomImageView(requireContext())
+            rotateZoomImageView.setImageBitmap(borderBitmap)
             rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
             if (Build.VERSION.SDK_INT >= 24){
                 rotateZoomImageView.updateDragShadow(View.DragShadowBuilder(rotateZoomImageView))
@@ -131,11 +124,6 @@ class Camera2DFragment : Fragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    enum class Mode {
-        RemoveBg,
-        ScreenShot
-    }
-
     private fun saveScreenShot(view: View, bitmap: Bitmap) {
         Toast.makeText(requireContext(), "儲存截圖至相簿後將重置畫面", Toast.LENGTH_LONG).show()
         view.background = BitmapDrawable(resources, bitmap)
@@ -151,5 +139,45 @@ class Camera2DFragment : Fragment() {
                 }
             }
         }.start()
+    }
+
+    private fun drawOutline(originalBitmap: Bitmap) : Bitmap {
+        val strokeWidth = 4
+        val newStrokedBitmap = Bitmap.createBitmap(
+            originalBitmap.width + 2 * strokeWidth,
+            originalBitmap.height + 2 * strokeWidth,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(newStrokedBitmap)
+        val scaleX =
+            (originalBitmap.width + 2.0f * strokeWidth) / originalBitmap.width
+        val scaleY =
+            (originalBitmap.height + 2.0f * strokeWidth) / originalBitmap.height
+        val matrix = Matrix()
+        matrix.setScale(scaleX, scaleY)
+        canvas.drawBitmap(originalBitmap, matrix, null)
+        canvas.drawColor(
+            Color.WHITE,
+            PorterDuff.Mode.SRC_ATOP
+        ) //Color.WHITE is stroke color
+
+        canvas.drawBitmap(originalBitmap, strokeWidth.toFloat(), strokeWidth.toFloat(), null)
+        return newStrokedBitmap
+    }
+
+    private fun saveScreenItem(background: Bitmap)  {
+        val x = rotateZoomImageView.x
+        val y = rotateZoomImageView.y
+        Timber.d("x: %f, y: %f", x, y)
+        viewModel.saveItem(viewModel.noBgBitmap.value!!, x, y, background) {
+            requireActivity().runOnUiThread {
+                Toast.makeText(requireContext(), "item 新增完成", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    enum class Mode {
+        RemoveBg,
+        ScreenShot
     }
 }
