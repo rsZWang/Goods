@@ -80,13 +80,16 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
-//    implementation "androidx.room:room-guava:$room_version"
+    implementation "androidx.room:room-guava:$room_version"
 
     implementation 'com.squareup.okhttp:okhttp:2.7.5'  // HTTP library
     implementation 'com.jakewharton.timber:timber:4.7.1'  // Timber logger
     implementation 'com.otaliastudios:cameraview:2.6.3' // Camera view
     implementation 'com.github.lau1944:Zoom-Drag-Rotate-ImageView:1.0.0' // Zoom, drag, rotate Image View
     implementation 'com.theapache64.removebg:removebg:1.0.0' // Remove bg
+
+    // Gson
+    implementation 'com.google.code.gson:gson:2.8.5'
 
     // Dagger
     implementation 'com.google.dagger:dagger:2.27'

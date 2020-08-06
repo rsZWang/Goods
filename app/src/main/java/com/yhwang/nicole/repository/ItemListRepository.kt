@@ -27,6 +27,11 @@ class ItemListRepository(
     }
 
     fun getItemImages() : LiveData<List<Item>> {
-        return roomDatabase.itemDao().getAllItem()
+        val listItemLiveData = MutableLiveData<List<Item>>()
+        val itemList = roomDatabase.itemDao().getAllItem()
+        if (roomDatabase.itemDao().getAllItem().isNotEmpty()) {
+            listItemLiveData.postValue(itemList)
+        }
+        return listItemLiveData
     }
 }

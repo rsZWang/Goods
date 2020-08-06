@@ -38,10 +38,6 @@ class ItemListFragment : Fragment() {
         fun newInstance() = ItemListFragment()
     }
 
-    private val viewModel: ItemListViewModel by viewModels {
-        InjectorUtils.provideItemListViewModelFactory(requireContext())
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -50,6 +46,10 @@ class ItemListFragment : Fragment() {
         return view
     }
 
+
+    private val viewModel: ItemListViewModel by viewModels {
+        InjectorUtils.provideItemListViewModelFactory(requireContext())
+    }
     lateinit var itemBitmap: Bitmap
     lateinit var itemBackgroundBitmap: Bitmap
     @SuppressLint("ClickableViewAccessibility")
@@ -64,24 +64,25 @@ class ItemListFragment : Fragment() {
         }
 
         viewModel.itemList.observe(viewLifecycleOwner) {
-            itemBitmap = loadJpgFileToBitmap(it[0].itemFileName)
-            itemBackgroundBitmap = loadJpgFileToBitmap(it[0].backgroundFileName)
-            relativeLayout.background = BitmapDrawable(resources, itemBackgroundBitmap)
+            if (it.isNotEmpty()) {
+                itemBitmap = loadJpgFileToBitmap(it[0].itemFileName)
+                itemBackgroundBitmap = loadJpgFileToBitmap(it[0].backgroundFileName)
+                relativeLayout.background = BitmapDrawable(resources, itemBackgroundBitmap)
 
-            val rotateZoomImageView = RotateZoomImageView(requireContext())
-            rotateZoomImageView.setImageBitmap(itemBitmap)
-            rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
-            if (Build.VERSION.SDK_INT >= 24){
-                rotateZoomImageView.updateDragShadow(View.DragShadowBuilder(rotateZoomImageView))
+                val rotateZoomImageView = RotateZoomImageView(requireContext())
+                rotateZoomImageView.setImageBitmap(itemBitmap)
+                rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
+                if (Build.VERSION.SDK_INT >= 24){
+                    rotateZoomImageView.updateDragShadow(View.DragShadowBuilder(rotateZoomImageView))
+                }
+                val x = it[0].x
+                val y = it[0].y
+                val margin = it[0].margin
+                val layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
+                rotateZoomImageView.x = x
+                rotateZoomImageView.y = y
+                relativeLayout.addView(rotateZoomImageView, layoutParams)
             }
-            val width = relativeLayout.width/3*2
-            val height = relativeLayout.height/3*2
-            val x = it[0].x
-            val y = it[0].y
-            val layoutParams = RelativeLayout.LayoutParams(width, height)
-            layoutParams.marginStart = x.toInt()
-            layoutParams.topMargin = y.toInt()
-            relativeLayout.addView(rotateZoomImageView, layoutParams)
         }
     }
 

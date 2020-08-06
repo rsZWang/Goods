@@ -93,12 +93,12 @@ class Camera2DRepository(
         }
     }
 
-    fun saveItem(item: Bitmap, x: Float, y: Float, background: Bitmap, callback: () -> Unit) {
+    fun saveItemAndBg(item: Bitmap, x: Float, y: Float, margin: List<Int>, background: Bitmap, callback: () -> Unit) {
         val itemName = "item_" + System.currentTimeMillis().toString() + ".jpg"
         val itemBackgroundName = "item_bg_" + System.currentTimeMillis().toString() + ".jpg"
         saveBitmapToFile(item, itemName, Bitmap.CompressFormat.PNG)
         saveBitmapToFile(background, itemBackgroundName, Bitmap.CompressFormat.JPEG)
-        roomDatabase.itemDao().insertItem(Item(itemName, x, y, itemBackgroundName))
+        roomDatabase.itemDao().insertItem(Item(itemName, x, y, margin, itemBackgroundName))
         callback()
     }
 

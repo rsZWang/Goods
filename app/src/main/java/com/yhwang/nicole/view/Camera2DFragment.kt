@@ -2,20 +2,22 @@ package com.yhwang.nicole.view
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.core.view.marginBottom
+import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
@@ -27,8 +29,11 @@ import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Item
 import com.yhwang.nicole.utilities.InjectorUtils
 import com.yhwang.nicole.viewModel.Camera2DViewModel
+import com.yhwang.nicole.viewModel.ItemListViewModel
 import kotlinx.android.synthetic.main.fragment_camera_2d.*
+import kotlinx.android.synthetic.main.fragment_item_list.*
 import timber.log.Timber
+import java.io.File
 
 
 @SuppressLint("ClickableViewAccessibility")
@@ -55,7 +60,7 @@ class Camera2DFragment : Fragment() {
                             Mode.ScreenShot -> {
 //                                saveScreenShot(draggable_layer_RelativeLayout, bitmap)
                                 Thread {
-                                    saveScreenItem(bitmap)
+                                    saveItemAndBg(rotateZoomImageView, bitmap)
                                 }.start()
                             }
                         }
@@ -68,12 +73,21 @@ class Camera2DFragment : Fragment() {
             cameraView.takePictureSnapshot()
         }
 
+//        view.findViewById<RelativeLayout>(R.id.draggable_layer_RelativeLayout).viewTreeObserver.addOnGlobalLayoutListener {
+//            Timber.d("width: %d", relativeLayout.width)
+//            Timber.d("height: %d", relativeLayout.height)
+//        }
+
         return view
     }
 
     private lateinit var cameraView: CameraView
     private val viewModel: Camera2DViewModel by viewModels {
         InjectorUtils.provideCamera2DViewModelFactory(requireContext())
+    }
+
+    private val itemListViewModel: ItemListViewModel by viewModels {
+        InjectorUtils.provideItemListViewModelFactory(requireContext())
     }
 
     lateinit var rotateZoomImageView: RotateZoomImageView
@@ -103,6 +117,36 @@ class Camera2DFragment : Fragment() {
             draggable_layer_RelativeLayout.addView(rotateZoomImageView, layoutParams)
             currentMode = Mode.ScreenShot
         }
+
+        Thread {
+            itemListViewModel.itemList.observe(viewLifecycleOwner) {
+                rotateZoomImageView = RotateZoomImageView(requireContext())
+                rotateZoomImageView.setImageBitmap (loadJpgFileToBitmap(it[0].itemFileName))
+                rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
+                if (Build.VERSION.SDK_INT >= 24){
+                    rotateZoomImageView.updateDragShadow(View.DragShadowBuilder(rotateZoomImageView))
+                }
+                val width = draggable_layer_RelativeLayout.width/3*2
+                val height = draggable_layer_RelativeLayout.height/3*2
+                val x = (draggable_layer_RelativeLayout.width - width)/2
+                val y = (draggable_layer_RelativeLayout.height - height)/2
+                val layoutParams = RelativeLayout.LayoutParams(width, height)
+                layoutParams.topMargin = it[0].margin[0]
+                layoutParams.bottomMargin = it[0].margin[1]
+                layoutParams.marginStart = it[0].margin[2]
+                layoutParams.bottomMargin = it[0].margin[3]
+                draggable_layer_RelativeLayout.addView(rotateZoomImageView, layoutParams)
+
+                currentMode = Mode.ScreenShot
+            }
+        }.start()
+    }
+
+    private fun loadJpgFileToBitmap(fileName: String) : Bitmap {
+        // Initialize a new file instance to save bitmap object
+        var file = ContextWrapper(context).getDir(Environment.DIRECTORY_PICTURES, Context.MODE_PRIVATE)
+        file = File(file, "$fileName.jpg")
+        return BitmapFactory.decodeFile(file.path)
     }
 
     override fun onResume() {
@@ -165,11 +209,12 @@ class Camera2DFragment : Fragment() {
         return newStrokedBitmap
     }
 
-    private fun saveScreenItem(background: Bitmap)  {
-        val x = rotateZoomImageView.x
-        val y = rotateZoomImageView.y
-        Timber.d("x: %f, y: %f", x, y)
-        viewModel.saveItem(viewModel.noBgBitmap.value!!, x, y, background) {
+    private fun saveItemAndBg(itemView: View, background: Bitmap)  {
+        Timber.d("save item")
+        viewModel.saveItem(
+            itemView,
+            background
+        ) {
             requireActivity().runOnUiThread {
                 Toast.makeText(requireContext(), "item 新增完成", Toast.LENGTH_LONG).show()
             }
