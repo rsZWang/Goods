@@ -15,17 +15,21 @@
         app:cameraAudio="off" />
 
     <RelativeLayout
-        android:id="@+id/draggable_layer_RelativeLayout"
+        android:id="@+id/draggable_item_RelativeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent">
-
-<!--        <com.easystudio.rotateimageview.RotateZoomImageView-->
-<!--            android:id="@+id/rotateZoomImageView"-->
-<!--            android:layout_width="300dp"-->
-<!--            android:layout_height="300dp"-->
-<!--            android:src="@drawable/ic_launcher"/>-->
     </RelativeLayout>
+
+<!--    <Button-->
+<!--        android:id="@+id/save_Button"-->
+<!--        android:text="存擋"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="400dp"-->
+<!--        android:layout_marginRight="20dp"-->
+<!--        app:layout_constraintRight_toRightOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"/>-->
 
     <Button
         android:id="@+id/take_Button"

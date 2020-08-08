@@ -16,7 +16,7 @@ class ItemListRepository(
     fun getItemDrawableImage(): LiveData<ArrayList<Drawable>> {
         val mutableLiveData = MutableLiveData<ArrayList<Drawable>>()
         val list = ArrayList<Drawable>()
-        for (i in 0..4) {
+        for (i in 0..1) {
             list.add(ContextCompat.getDrawable(context, R.drawable.pikachu_1)!!)
             list.add(ContextCompat.getDrawable(context, R.drawable.pikachu_2)!!)
             list.add(ContextCompat.getDrawable(context, R.drawable.pikachu_3)!!)
@@ -26,12 +26,12 @@ class ItemListRepository(
         return mutableLiveData
     }
 
-    fun getItemImages() : LiveData<List<Item>> {
-        val listItemLiveData = MutableLiveData<List<Item>>()
-        val itemList = roomDatabase.itemDao().getAllItem()
-        if (roomDatabase.itemDao().getAllItem().isNotEmpty()) {
-            listItemLiveData.postValue(itemList)
-        }
-        return listItemLiveData
+    fun getItemImages(liveData: MutableLiveData<List<Item>>) {
+        Thread {
+            val list = roomDatabase.itemDao().getAllItem()
+            if (list.isNotEmpty()) {
+                liveData.postValue(list)
+            }
+        }.start()
     }
 }

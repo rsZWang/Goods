@@ -19,34 +19,12 @@ class Camera2DViewModel(
         repository.getRemoveBgBitmap(noBgBitmap, bitmap)
     }
 
-    fun saveScreenShot(bitmap: Bitmap, callback: ()->Unit) =
-        repository.saveBitmapToGallery(bitmap, callback)
+    fun saveScreenToGallery(bitmap: Bitmap, callback: ()->Unit) =
+        repository.saveScreenToGallery(bitmap, callback)
 
-
-    fun saveItem(itemView: View, background: Bitmap, callback: () -> Unit) {
-
-        val width = itemView.layoutParams.width
-        val height = itemView.layoutParams.height
-
-        val itemBitmap = Bitmap.createBitmap(
-            width,
-            height,
-            Bitmap.Config.ARGB_8888
-        )
-        val canvas = Canvas(itemBitmap)
-        itemView.draw(canvas)
-
-        val arrayList = ArrayList<Int>()
-        arrayList.add(itemView.marginTop)
-        arrayList.add(itemView.marginBottom)
-        arrayList.add(itemView.marginStart)
-        arrayList.add(itemView.marginEnd)
-
+    fun saveItemAndBg(itemBitmap: Bitmap, background: Bitmap, callback: () -> Unit) {
         repository.saveItemAndBg(
             itemBitmap,
-            itemView.x,
-            itemView.y,
-            arrayList,
             background,
             callback)
     }

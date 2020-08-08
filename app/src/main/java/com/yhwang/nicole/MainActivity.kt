@@ -2,6 +2,7 @@ package com.yhwang.nicole
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.theapache64.removebg.RemoveBg
 import com.userstar.oqrticket.timber.ReleaseTree
 import com.userstar.oqrticket.timber.ThreadIncludedDebugTree
 import timber.log.Timber
@@ -16,6 +17,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             Timber.plant(ReleaseTree())
         }
+        RemoveBg.init("HNgbfyDy99WHvbp28KaMLJjR")
     }
 
     override fun onResume() {
