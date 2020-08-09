@@ -12,7 +12,7 @@ import android.widget.Toast
 import timber.log.Timber
 import java.io.File
 
-fun itemLayoutToBitmap(view: View): Bitmap {
+fun layoutToBitmap(view: View): Bitmap {
     val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
     view.draw(canvas)

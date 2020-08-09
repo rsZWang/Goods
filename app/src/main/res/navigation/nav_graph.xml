@@ -3,28 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/startPageFragment2">
+    app:startDestination="@id/itemListFragment">
 
     <fragment
         android:id="@+id/itemListFragment"
         android:name="com.yhwang.nicole.view.ItemListFragment"
-        android:label="fragment_item_list"
-        tools:layout="@layout/fragment_item_list" />
+        android:label="Goods"
+        tools:layout="@layout/fragment_item_list" >
+        <action
+            android:id="@+id/action_itemListFragment_to_camera2DFragment"
+            app:destination="@id/camera2DFragment" />
+    </fragment>
     <fragment
         android:id="@+id/camera2DFragment"
         android:name="com.yhwang.nicole.view.Camera2DFragment"
-        android:label="fragment_camera2_d"
+        android:label="Goods"
         tools:layout="@layout/fragment_camera_2d" />
-    <fragment
-        android:id="@+id/startPageFragment2"
-        android:name="com.yhwang.nicole.view.StartPageFragment"
-        android:label="fragment_start_page"
-        tools:layout="@layout/fragment_start_page" >
-        <action
-            android:id="@+id/action_startPageFragment2_to_itemListFragment"
-            app:destination="@id/itemListFragment" />
-        <action
-            android:id="@+id/action_startPageFragment2_to_camera2DFragment"
-            app:destination="@id/camera2DFragment" />
-    </fragment>
 </navigation>

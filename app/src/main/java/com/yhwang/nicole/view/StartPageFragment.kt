@@ -34,15 +34,15 @@ class StartPageFragment : Fragment() {
 
         view.findViewById<Button>(R.id.to_item_list_fragment_Button).setOnClickListener {
             Timber.d("to item list fragment")
-            val destination = StartPageFragmentDirections
-                .actionStartPageFragment2ToItemListFragment()
+            val destination = ItemListFragmentDirections
+                .actionItemListFragmentToCamera2DFragment()
             view.findNavController().navigate(destination)
         }
 
         view.findViewById<Button>(R.id.to_camera_fragment_Button).setOnClickListener {
             Timber.d("to camera 2D fragment")
-            val destination = StartPageFragmentDirections
-                .actionStartPageFragment2ToCamera2DFragment()
+            val destination = ItemListFragmentDirections
+                .actionItemListFragmentToCamera2DFragment()
             view.findNavController().navigate(destination)
         }
     }

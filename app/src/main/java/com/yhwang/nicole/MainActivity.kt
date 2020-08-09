@@ -1,13 +1,22 @@
 package com.yhwang.nicole
 
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.theapache64.removebg.RemoveBg
 import com.userstar.oqrticket.timber.ReleaseTree
 import com.userstar.oqrticket.timber.ThreadIncludedDebugTree
+import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -17,10 +26,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             Timber.plant(ReleaseTree())
         }
-        RemoveBg.init("HNgbfyDy99WHvbp28KaMLJjR")
-    }
 
-    override fun onResume() {
-        super.onResume()
+        RemoveBg.init("HNgbfyDy99WHvbp28KaMLJjR")
     }
 }
