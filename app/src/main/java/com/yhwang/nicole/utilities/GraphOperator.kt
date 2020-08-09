@@ -26,14 +26,6 @@ fun layoutToDrawable(resources: Resources, view: View): Drawable {
     return BitmapDrawable(resources, bitmap)
 }
 
-fun takeScreenShotBitmap(context: Context, view: View): Bitmap {
-    Toast.makeText(context, "儲存截圖至相簿後將重置畫面", Toast.LENGTH_LONG).show()
-    val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
-    view.draw(canvas)
-    return bitmap
-}
-
 fun drawOutline(originalBitmap: Bitmap, color: Int) : Bitmap {
     val strokeWidth = 4
     val newStrokedBitmap = Bitmap.createBitmap(

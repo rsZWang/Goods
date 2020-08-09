@@ -8,10 +8,11 @@ import androidx.lifecycle.MutableLiveData
 import com.yhwang.nicole.GoodsDatabase
 import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Item
+import com.yhwang.nicole.utilities.deleteImageFile
 
 class ItemListRepository(
     val context: Context,
-    private val roomDatabase: GoodsDatabase
+    private val room: GoodsDatabase
 ) {
     fun getItemDrawableImage(): LiveData<ArrayList<Drawable>> {
         val mutableLiveData = MutableLiveData<ArrayList<Drawable>>()
@@ -26,12 +27,15 @@ class ItemListRepository(
         return mutableLiveData
     }
 
-    fun getItemImages(liveData: MutableLiveData<List<Item>>) {
+    fun getItemList(callback: (ArrayList<Item>)->Unit) {
         Thread {
-            val list = roomDatabase.itemDao().getAllItem()
-            if (list.isNotEmpty()) {
-                liveData.postValue(list)
-            }
+            callback(ArrayList(room.itemDao().getAllItem()))
         }.start()
+    }
+
+    fun removeItem(item: Item) {
+        room.itemDao().deleteItem(item)
+        deleteImageFile(context, item.itemFileName)
+        deleteImageFile(context, item.backgroundFileName)
     }
 }

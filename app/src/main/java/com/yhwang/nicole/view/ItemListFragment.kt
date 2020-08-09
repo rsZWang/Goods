@@ -2,26 +2,22 @@ package com.yhwang.nicole.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
-import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.easystudio.rotateimageview.RotateZoomImageView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Item
 import com.yhwang.nicole.utilities.*
 import com.yhwang.nicole.viewModel.ItemListViewModel
 import kotlinx.android.synthetic.main.fragment_item_list.*
 import timber.log.Timber
-import java.util.*
 import kotlin.collections.ArrayList
 
 
@@ -31,29 +27,25 @@ class ItemListFragment : Fragment() {
         fun newInstance() = ItemListFragment()
     }
 
-    lateinit var adapter: ItemRecyclerViewAdapter
-    lateinit var itemBgRelativeLayout: RelativeLayout
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_item_list, container, false)
 
-        val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
-        val itemListRecyclerView = view.findViewById<RecyclerView>(R.id.item_list_RecyclerView)
-        itemListRecyclerView.layoutManager = layoutManager
-        adapter = ItemRecyclerViewAdapter(requireContext())
-        itemListRecyclerView.adapter = adapter
-
-        itemBgRelativeLayout = view.findViewById(R.id.item_bg_RelativeLayout)
-
         view.findViewById<ImageView>(R.id.to_camera_fragment_Button).setOnClickListener {
-            Timber.d("to camera 2D fragment")
+            Timber.i("to camera 2D fragment")
             val destination = ItemListFragmentDirections
                 .actionItemListFragmentToCamera2DFragment()
             view.findNavController().navigate(destination)
         }
+
+        val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        layoutManager.isItemPrefetchEnabled = true
+        layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
+        val itemRecyclerView = view.findViewById<RecyclerView>(R.id.item_list_RecyclerView)
+        itemRecyclerView.layoutManager = layoutManager
+        itemRecyclerView.adapter = ItemRecyclerViewAdapter(requireContext())
 
         return view
     }
@@ -65,85 +57,56 @@ class ItemListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.getItemList().observe(viewLifecycleOwner) {
+        viewModel.itemList.observe(viewLifecycleOwner) { itemList ->
             Timber.i("get item list")
-            if (it.isNotEmpty()) {
-                hint_TextView.text = ""
-                drawItemCardView(it, 0)
-            } else {
-                Timber.i("NO item now")
-//                defaultCardView = LayoutInflater.from(requireContext()).inflate(R.layout.card_view_item_default, null)
-//                itemBgRelativeLayout.addView(defaultCardView)
-//                Timer().schedule(object : TimerTask() {
-//                    override fun run() {
-//                        requireActivity().runOnUiThread {
-//                            adapter.list.add(layoutToDrawable(resources, itemBgRelativeLayout))
-//                            adapter.notifyDataSetChanged()
-//                            itemBgRelativeLayout.removeAllViews()
-//                        }
-//                    }
-//                }, 5)
+            requireActivity().runOnUiThread {
+                if (itemList.isNotEmpty()) {
+                    (item_list_RecyclerView.adapter as ItemRecyclerViewAdapter).updateList(itemList)
+                    hint_TextView.text = ""
+                } else {
+                    (item_list_RecyclerView.adapter as ItemRecyclerViewAdapter).updateList(ArrayList())
+                    hint_TextView.text = "點擊相機新增項目"
+                }
             }
         }
+        viewModel.updateItemList()
     }
 
-
-    fun drawItemCardView(itemList: List<Item>, index: Int) {
-        try {
-            Timber.i("draw item card view")
-            val itemRotateZoomImageView = RotateZoomImageView(requireContext())
-            itemRotateZoomImageView.setImageBitmap(fileToBitmap(requireContext(), itemList[index].itemFileName))
-            itemBgRelativeLayout.addView(itemRotateZoomImageView)
-            itemBgRelativeLayout.background = BitmapDrawable(resources, fileToBitmap(requireContext(), itemList[index].backgroundFileName))
-            Timer().schedule(object : TimerTask() {
-                override fun run() {
-                    try {
-                        requireActivity().runOnUiThread {
-                            if (itemBgRelativeLayout.width > 0 && itemBgRelativeLayout.height > 0) {
-                                adapter.list.add(layoutToDrawable(resources, itemBgRelativeLayout))
-                                adapter.notifyDataSetChanged()
-                                itemBgRelativeLayout.removeAllViews()
-                            } else {
-                                Timber.e("error item width/height equals 0")
-                            }
-
-                            if (index<itemList.size-1) {
-                                drawItemCardView(itemList, index+1)
-                            } else {
-                                itemBgRelativeLayout.visibility = View.INVISIBLE
-                            }
-                        }
-                    } catch (exception: IllegalStateException) {
-                        exception.printStackTrace()
-                        return
-                    }
-                }
-            }, 5)
-        } catch (exception: IllegalStateException) {
-            exception.printStackTrace()
-            return
-        }
-    }
-
-    class ItemRecyclerViewAdapter(
+    inner class ItemRecyclerViewAdapter(
         private val context: Context
     ) : RecyclerView.Adapter<ItemRecyclerViewAdapter.ViewHolder>() {
 
-        var list = ArrayList<Drawable>()
+        var list = ArrayList<Item>()
+        fun updateList(list: ArrayList<Item>) {
+            Timber.d("update item list")
+            this.list = list
+            notifyDataSetChanged()
+        }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
            return ViewHolder(LayoutInflater.from(context)
                 .inflate(R.layout.card_view_item, parent, false))
         }
-
         override fun getItemCount(): Int = list.size
-
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.imageView.setImageDrawable(list[position])
+            holder.itemView.setOnLongClickListener {
+                MaterialAlertDialogBuilder(context)
+                    .setMessage("確定要刪除這個物件？")
+                    .setNegativeButton("取消", null)
+                    .setPositiveButton("確定") { dialog, which ->
+                        Thread { viewModel.removeItem(list[position]) }.start()
+                    }
+                    .setCancelable(false)
+                    .show()
+                true
+            }
+            holder.itemImageView.setImageBitmap(fileToBitmap(requireContext(), list[position].itemFileName))
+            holder.itemBgImageView.setImageBitmap(fileToBitmap(requireContext(), list[position].backgroundFileName))
         }
 
-        class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val imageView: ImageView = itemView.findViewById(R.id.item_ImageView)
+        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val itemBgImageView: ImageView = view.findViewById(R.id.item_bg_ImageView)
+            val itemImageView: ImageView = view.findViewById(R.id.item_ImageView)
         }
     }
 }

@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -68,6 +67,7 @@ class Camera2DFragment : Fragment() {
                                     requireActivity().runOnUiThread { draggable_item_RelativeLayout.background = BitmapDrawable(resources, bitmap) }
                                 }.start()
                             }
+                            else -> Timber.e("mode error")
                         }
                     }
                 }
@@ -139,11 +139,9 @@ class Camera2DFragment : Fragment() {
             }
             val width = draggable_item_RelativeLayout.width/3*2
             val height = draggable_item_RelativeLayout.height/3*2
-            val x = (draggable_item_RelativeLayout.width - width)/2
-            val y = (draggable_item_RelativeLayout.height - height)/2
             val layoutParams = RelativeLayout.LayoutParams(width, height)
-            layoutParams.marginStart = x
-            layoutParams.topMargin = y
+            layoutParams.marginStart = (draggable_item_RelativeLayout.width - width)/2
+            layoutParams.topMargin = (draggable_item_RelativeLayout.height - height)/2
             draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
 
             take_Button.text = "存擋"

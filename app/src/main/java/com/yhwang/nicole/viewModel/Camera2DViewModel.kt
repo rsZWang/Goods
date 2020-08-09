@@ -15,17 +15,15 @@ class Camera2DViewModel(
     private val repository: Camera2DRepository
 ) : ViewModel() {
     var noBgBitmap = MutableLiveData<Bitmap>()
-    fun getNoBgBitMap(bitmap: Bitmap) {
+    fun getNoBgBitMap(bitmap: Bitmap) =
         repository.getRemoveBgBitmap(noBgBitmap, bitmap)
-    }
 
     fun saveScreenToGallery(bitmap: Bitmap, callback: ()->Unit) =
         repository.saveScreenToGallery(bitmap, callback)
 
-    fun saveItemAndBg(itemBitmap: Bitmap, background: Bitmap, callback: () -> Unit) {
+    fun saveItemAndBg(itemBitmap: Bitmap, background: Bitmap, callback: () -> Unit) =
         repository.saveItemAndBg(
             itemBitmap,
             background,
             callback)
-    }
 }

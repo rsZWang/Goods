@@ -5,15 +5,24 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.yhwang.nicole.model.Item
 import com.yhwang.nicole.repository.ItemListRepository
+import kotlinx.coroutines.*
+import timber.log.Timber
 
 class ItemListViewModel(
     private val repository: ItemListRepository
 ) : ViewModel() {
     val itemDrawableList = repository.getItemDrawableImage()
 
-    fun getItemList() : LiveData<List<Item>> {
-        val liveData = MutableLiveData<List<Item>>()
-        repository.getItemImages(liveData)
-        return liveData
+    var itemList = MutableLiveData<ArrayList<Item>>()
+    fun updateItemList() {
+        Timber.i("update item list")
+        repository.getItemList {
+            itemList.postValue(it)
+        }
+    }
+    fun removeItem(item: Item) {
+        Timber.i("remove item ${item.id}")
+        repository.removeItem(item)
+        updateItemList()
     }
 }

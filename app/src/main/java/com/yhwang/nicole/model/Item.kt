@@ -21,4 +21,7 @@ interface ItemDao {
 
     @Insert
     fun insertItem(item: Item)
+
+    @Delete
+    fun deleteItem(item: Item)
 }
