@@ -12,7 +12,14 @@
         tools:layout="@layout/fragment_item_list" >
         <action
             android:id="@+id/action_itemListFragment_to_camera2DFragment"
-            app:destination="@id/camera2DFragment" />
+            app:destination="@id/camera2DFragment" >
+            <argument
+                android:name="item"
+                app:argType="com.yhwang.nicole.model.Item"
+                app:nullable="true"
+                android:defaultValue="@null"/>
+        </action>
+
     </fragment>
     <fragment
         android:id="@+id/camera2DFragment"

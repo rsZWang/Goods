@@ -1,18 +1,20 @@
 package com.yhwang.nicole.model
 
-import androidx.lifecycle.LiveData
+import android.os.Parcelable
 import androidx.room.*
+import kotlinx.android.parcel.Parcelize
 
 @Entity(tableName = "item")
+@Parcelize
 @TypeConverters(com.yhwang.nicole.database.TypeConverters::class)
 class Item(
     @ColumnInfo(name = "item_file_name") val itemFileName: String,
-    @ColumnInfo(name = "item_background_file_name") val backgroundFileName: String
-) {
+//    @ColumnInfo(name = "x") val x: Float,
+//    @ColumnInfo(name = "y") val y: Float,
+    @ColumnInfo(name = "item_background_file_name") val backgroundFileName: String,
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
     var id: Long = 0
-}
+) : Parcelable
 
 @Dao
 interface ItemDao {

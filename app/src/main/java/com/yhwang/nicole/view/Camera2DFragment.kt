@@ -21,8 +21,10 @@ import com.otaliastudios.cameraview.CameraListener
 import com.otaliastudios.cameraview.CameraView
 import com.otaliastudios.cameraview.PictureResult
 import com.yhwang.nicole.R
-import com.yhwang.nicole.utilities.InjectorUtils
-import com.yhwang.nicole.utilities.layoutToBitmap
+import com.yhwang.nicole.model.Item
+import com.yhwang.nicole.utility.InjectorUtils
+import com.yhwang.nicole.utility.fileToBitmap
+import com.yhwang.nicole.utility.layoutToBitmap
 import com.yhwang.nicole.viewModel.Camera2DViewModel
 import kotlinx.android.synthetic.main.fragment_camera_2d.*
 import timber.log.Timber
@@ -30,8 +32,6 @@ import timber.log.Timber
 
 @SuppressLint("ClickableViewAccessibility")
 class Camera2DFragment : Fragment() {
-
-    var currentMode = Mode.RemoveBg
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,7 +47,7 @@ class Camera2DFragment : Fragment() {
                 super.onPictureTaken(result)
                 result.toBitmap { bitmap ->
                     if (bitmap != null) {
-                        when (currentMode) {
+                        when (mode) {
                             Mode.RemoveBg -> {
                                 Timber.d("remove bg mode")
                                 Toast.makeText(requireContext(), "去背中...", Toast.LENGTH_LONG).show()
@@ -61,7 +61,7 @@ class Camera2DFragment : Fragment() {
                                             Toast.makeText(requireContext(), "存擋完成", Toast.LENGTH_LONG).show()
                                             take_Button.text = "清除背景"
                                             share_button.text = "分享"
-                                            currentMode = Mode.ClearBg
+                                            mode = Mode.ClearBg
                                         }
                                     }
                                     requireActivity().runOnUiThread { draggable_item_RelativeLayout.background = BitmapDrawable(resources, bitmap) }
@@ -86,25 +86,26 @@ class Camera2DFragment : Fragment() {
         InjectorUtils.provideCamera2DViewModelFactory(requireContext())
     }
 
+    private lateinit var mode: Mode
     private lateinit var rotateZoomImageView: RotateZoomImageView
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         take_Button.setOnClickListener {
-            when (currentMode) {
+            when (mode) {
                 Mode.RemoveBg -> cameraView.takePictureSnapshot()
                 Mode.ScreenShot -> cameraView.takePictureSnapshot()
                 Mode.ClearBg -> {
                     draggable_item_RelativeLayout.background = null
                     take_Button.text = "拍照"
                     share_button.text = "清空"
-                    currentMode = Mode.ScreenShot
+                    mode = Mode.ScreenShot
                 }
             }
         }
 
         share_button.setOnClickListener {
-            when (currentMode) {
+            when (mode) {
                 Mode.RemoveBg -> Toast.makeText(
                     requireContext(),
                     "請先去背",
@@ -115,7 +116,7 @@ class Camera2DFragment : Fragment() {
                     draggable_item_RelativeLayout.removeAllViews()
                     draggable_item_RelativeLayout.background = null
                     take_Button.text = "去背"
-                    currentMode = Mode.RemoveBg
+                    mode = Mode.RemoveBg
                 }
 
                 Mode.ClearBg -> viewModel.saveScreenToGallery(layoutToBitmap(draggable_item_RelativeLayout)) {
@@ -134,9 +135,6 @@ class Camera2DFragment : Fragment() {
             rotateZoomImageView = RotateZoomImageView(requireContext())
             rotateZoomImageView.setImageBitmap(bitmap)
             rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
-            if (Build.VERSION.SDK_INT >= 24){
-                rotateZoomImageView.updateDragShadow(View.DragShadowBuilder(rotateZoomImageView))
-            }
             val width = draggable_item_RelativeLayout.width/3*2
             val height = draggable_item_RelativeLayout.height/3*2
             val layoutParams = RelativeLayout.LayoutParams(width, height)
@@ -145,7 +143,25 @@ class Camera2DFragment : Fragment() {
             draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
 
             take_Button.text = "存擋"
-            currentMode = Mode.ScreenShot
+            mode = Mode.ScreenShot
+        }
+
+        if (requireArguments()["item"]!=null) {
+            val item = requireArguments()["item"] as Item
+            Timber.i("item id: %d", item.id)
+            val bitmap = fileToBitmap(requireContext(), item.itemFileName)
+            rotateZoomImageView = RotateZoomImageView(requireContext())
+            rotateZoomImageView.setImageBitmap(bitmap)
+            rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
+            val layoutParams = RelativeLayout.LayoutParams(bitmap.width, bitmap.height)
+            rotateZoomImageView.layoutParams = layoutParams
+            draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
+            draggable_item_RelativeLayout.background = BitmapDrawable(resources, fileToBitmap(requireContext(), item.backgroundFileName))
+            take_Button.text = "清除背景"
+            share_button.text = "分享"
+            mode = Mode.ClearBg
+        } else {
+            mode = Mode.RemoveBg
         }
     }
 

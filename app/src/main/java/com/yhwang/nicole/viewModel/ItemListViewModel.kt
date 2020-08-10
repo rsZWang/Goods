@@ -1,11 +1,9 @@
 package com.yhwang.nicole.viewModel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.yhwang.nicole.model.Item
 import com.yhwang.nicole.repository.ItemListRepository
-import kotlinx.coroutines.*
 import timber.log.Timber
 
 class ItemListViewModel(

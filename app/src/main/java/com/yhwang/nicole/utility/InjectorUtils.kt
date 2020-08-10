@@ -1,7 +1,7 @@
-package com.yhwang.nicole.utilities
+package com.yhwang.nicole.utility
 
 import android.content.Context
-import com.yhwang.nicole.GoodsDatabase
+import com.yhwang.nicole.database.GoodsDatabase
 import com.yhwang.nicole.repository.Camera2DRepository
 import com.yhwang.nicole.repository.ItemListRepository
 import com.yhwang.nicole.viewModel.Camera2DViewModelFactory

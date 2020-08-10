@@ -5,15 +5,14 @@ import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
 import com.theapache64.removebg.RemoveBg
 import com.theapache64.removebg.utils.ErrorResponse
-import com.yhwang.nicole.GoodsDatabase
+import com.yhwang.nicole.database.GoodsDatabase
 import com.yhwang.nicole.model.Item
-import com.yhwang.nicole.utilities.bitmapToFile
-import com.yhwang.nicole.utilities.saveBitmapToGallery
+import com.yhwang.nicole.utility.bitmapToFile
+import com.yhwang.nicole.utility.saveBitmapToGallery
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.OutputStream
 
 class Camera2DRepository(
     private val context: Context,
@@ -23,7 +22,7 @@ class Camera2DRepository(
         val imageFile = File(context.cacheDir, "capturedImage.jpeg")
         try {
             val outputStream = FileOutputStream(imageFile)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
             outputStream.flush()
             outputStream.close()
         } catch (e: IOException) {

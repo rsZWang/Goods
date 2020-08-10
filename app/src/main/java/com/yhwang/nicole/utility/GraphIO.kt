@@ -1,25 +1,21 @@
-package com.yhwang.nicole.utilities
+package com.yhwang.nicole.utility
 
 import android.content.ContentValues
 import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import android.view.View
 import android.widget.ImageView
-import androidx.core.net.toUri
 import com.squareup.picasso.Picasso
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
-import java.net.URI
 
 fun saveBitmapToGallery(context: Context, bitmap: Bitmap, callback: ()->Unit) {
     if (Build.VERSION.SDK_INT >= 29) {

@@ -8,18 +8,17 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Item
-import com.yhwang.nicole.utilities.*
+import com.yhwang.nicole.utility.*
 import com.yhwang.nicole.viewModel.ItemListViewModel
 import kotlinx.android.synthetic.main.fragment_item_list.*
 import timber.log.Timber
 import kotlin.collections.ArrayList
-
 
 class ItemListFragment : Fragment() {
 
@@ -33,19 +32,19 @@ class ItemListFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_item_list, container, false)
 
-        view.findViewById<ImageView>(R.id.to_camera_fragment_Button).setOnClickListener {
-            Timber.i("to camera 2D fragment")
-            val destination = ItemListFragmentDirections
-                .actionItemListFragmentToCamera2DFragment()
-            view.findNavController().navigate(destination)
-        }
-
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         layoutManager.isItemPrefetchEnabled = true
         layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
         val itemRecyclerView = view.findViewById<RecyclerView>(R.id.item_list_RecyclerView)
         itemRecyclerView.layoutManager = layoutManager
         itemRecyclerView.adapter = ItemRecyclerViewAdapter(requireContext())
+
+        view.findViewById<ImageView>(R.id.to_camera_fragment_Button).setOnClickListener {
+            Timber.i("to camera 2D fragment")
+            val destination = ItemListFragmentDirections
+                .actionItemListFragmentToCamera2DFragment(null)
+            findNavController().navigate(destination)
+        }
 
         return view
     }
@@ -99,6 +98,12 @@ class ItemListFragment : Fragment() {
                     .setCancelable(false)
                     .show()
                 true
+            }
+            holder.itemView.setOnClickListener {
+                Timber.i("pass item: %d", list[position].id)
+                val destination = ItemListFragmentDirections
+                    .actionItemListFragmentToCamera2DFragment(list[position])
+                findNavController().navigate(destination)
             }
             holder.itemImageView.setImageBitmap(fileToBitmap(requireContext(), list[position].itemFileName))
             holder.itemBgImageView.setImageBitmap(fileToBitmap(requireContext(), list[position].backgroundFileName))

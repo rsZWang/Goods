@@ -5,10 +5,10 @@ import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.yhwang.nicole.GoodsDatabase
+import com.yhwang.nicole.database.GoodsDatabase
 import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Item
-import com.yhwang.nicole.utilities.deleteImageFile
+import com.yhwang.nicole.utility.deleteImageFile
 
 class ItemListRepository(
     val context: Context,
