@@ -27,7 +27,7 @@ fun saveBitmapToGallery(context: Context, bitmap: Bitmap, callback: ()->Unit) {
             context.contentResolver.update(uri, imageContentValues, null, null)
         }
     } else {
-        val directory = File(Environment.getExternalStorageDirectory().toString() + File.separator + "RemoveBg")
+        val directory = File(Environment.getExternalStorageDirectory().toString() + File.separator + "Goods")
         if (!directory.exists()) { directory.mkdirs() }
         val fileName = System.currentTimeMillis().toString() + ".jpg"
         val file = File(directory, fileName)

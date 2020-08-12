@@ -3,6 +3,7 @@ package com.yhwang.nicole.view
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.*
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.core.graphics.translationMatrix
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
@@ -20,14 +22,15 @@ import com.easystudio.rotateimageview.RotateZoomImageView
 import com.otaliastudios.cameraview.CameraListener
 import com.otaliastudios.cameraview.CameraView
 import com.otaliastudios.cameraview.PictureResult
+import com.yhwang.nicole.BuildConfig
 import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Item
-import com.yhwang.nicole.utility.InjectorUtils
-import com.yhwang.nicole.utility.fileToBitmap
-import com.yhwang.nicole.utility.layoutToBitmap
+import com.yhwang.nicole.utility.*
 import com.yhwang.nicole.viewModel.Camera2DViewModel
 import kotlinx.android.synthetic.main.fragment_camera_2d.*
+import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
+import java.util.*
 
 
 @SuppressLint("ClickableViewAccessibility")
@@ -51,12 +54,17 @@ class Camera2DFragment : Fragment() {
                             Mode.RemoveBg -> {
                                 Timber.d("remove bg mode")
                                 Toast.makeText(requireContext(), "去背中...", Toast.LENGTH_LONG).show()
-                                viewModel.getNoBgBitMap(bitmap)
+                                removeBitmapBg(bitmap)
                             }
                             Mode.ScreenShot -> {
                                 Thread {
                                     Timber.d("screen shot mode")
-                                    viewModel.saveItemAndBg(layoutToBitmap(draggable_item_RelativeLayout), bitmap) {
+                                    viewModel.saveItemAndBg(
+                                        layoutToBitmap(draggable_item_RelativeLayout),
+                                        rotateZoomImageView.x,
+                                        rotateZoomImageView.y,
+                                        bitmap
+                                    ) {
                                         requireActivity().runOnUiThread {
                                             Toast.makeText(requireContext(), "存擋完成", Toast.LENGTH_LONG).show()
                                             take_Button.text = "清除背景"
@@ -130,21 +138,6 @@ class Camera2DFragment : Fragment() {
         }
 
         cameraView.setLifecycleOwner(viewLifecycleOwner)
-        viewModel.noBgBitmap.observe(viewLifecycleOwner) { bitmap ->
-            Toast.makeText(requireContext(), "去背完成", Toast.LENGTH_SHORT).show()
-            rotateZoomImageView = RotateZoomImageView(requireContext())
-            rotateZoomImageView.setImageBitmap(bitmap)
-            rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
-            val width = draggable_item_RelativeLayout.width/3*2
-            val height = draggable_item_RelativeLayout.height/3*2
-            val layoutParams = RelativeLayout.LayoutParams(width, height)
-            layoutParams.marginStart = (draggable_item_RelativeLayout.width - width)/2
-            layoutParams.topMargin = (draggable_item_RelativeLayout.height - height)/2
-            draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
-
-            take_Button.text = "存擋"
-            mode = Mode.ScreenShot
-        }
 
         if (requireArguments()["item"]!=null) {
             val item = requireArguments()["item"] as Item
@@ -184,6 +177,44 @@ class Camera2DFragment : Fragment() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    fun removeBitmapBg(bitmap: Bitmap) {
+        viewModel.removeBg(bitmap) { noBgBitmap ->
+            requireActivity().runOnUiThread {
+                Toast.makeText(requireContext(), "去背完成", Toast.LENGTH_SHORT).show()
+
+                bitmapToFile(requireContext(), trimTransparentPart(noBgBitmap), "test.png", Bitmap.CompressFormat.PNG)
+                val fileBitmap = fileToBitmap(requireContext(), "test.png")
+                rotateZoomImageView = RotateZoomImageView(requireContext())
+                rotateZoomImageView.setImageBitmap(fileBitmap)
+                rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
+                if (BuildConfig.DEBUG) { rotateZoomImageView.setBackgroundResource(R.drawable.border) }
+                val layoutParams = RelativeLayout.LayoutParams(draggable_item_RelativeLayout.width, draggable_item_RelativeLayout.height)
+                draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
+
+//                rotateZoomImageView = RotateZoomImageView(requireContext())
+//                rotateZoomImageView.setImageBitmap(noBgBitmap)
+//                rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
+//                if (BuildConfig.DEBUG) { rotateZoomImageView.setBackgroundResource(R.drawable.border) }
+//                val layoutParams = RelativeLayout.LayoutParams(draggable_item_RelativeLayout.width, draggable_item_RelativeLayout.height)
+//                draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
+//
+//                take_Button.text = "存擋"
+//                mode = Mode.ScreenShot
+            }
+//            val trimmedBitmap = trimTransparentPart(bitmap)
+//            rotateZoomImageView = RotateZoomImageView(requireContext())
+//            rotateZoomImageView.setImageBitmap(trimmedBitmap)
+//            rotateZoomImageView.setBackgroundResource(R.drawable.border)
+//            rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
+//            val width = trimmedBitmap.width/3*2
+//            val height = trimmedBitmap.height/3*2
+//            val layoutParams = RelativeLayout.LayoutParams(bitmap.width, bitmap.height)
+//            layoutParams.marginStart = (draggable_item_RelativeLayout.width - width)/2
+//            layoutParams.topMargin = (draggable_item_RelativeLayout.height - height)/2
+//            draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
+        }
     }
 
     enum class Mode {

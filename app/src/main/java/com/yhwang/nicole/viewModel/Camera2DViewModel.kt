@@ -14,16 +14,18 @@ import com.yhwang.nicole.repository.Camera2DRepository
 class Camera2DViewModel(
     private val repository: Camera2DRepository
 ) : ViewModel() {
-    var noBgBitmap = MutableLiveData<Bitmap>()
-    fun getNoBgBitMap(bitmap: Bitmap) =
-        repository.getRemoveBgBitmap(noBgBitmap, bitmap)
+    fun removeBg(bitmap: Bitmap, callback: (bitmap: Bitmap) -> Unit) =
+        repository.removeBg(bitmap, callback)
+
 
     fun saveScreenToGallery(bitmap: Bitmap, callback: ()->Unit) =
         repository.saveScreenToGallery(bitmap, callback)
 
-    fun saveItemAndBg(itemBitmap: Bitmap, background: Bitmap, callback: () -> Unit) =
+    fun saveItemAndBg(itemBitmap: Bitmap, x: Float, y: Float, background: Bitmap, callback: () -> Unit) =
         repository.saveItemAndBg(
             itemBitmap,
+            x,
+            y,
             background,
             callback)
 }

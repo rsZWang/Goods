@@ -1,5 +1,6 @@
 package com.yhwang.nicole.utility
 
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -7,6 +8,7 @@ import android.graphics.Matrix
 import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.util.DisplayMetrics
 import android.view.View
 import java.util.*
 
@@ -49,7 +51,40 @@ fun drawOutline(originalBitmap: Bitmap, color: Int) : Bitmap {
     return newStrokedBitmap
 }
 
-fun trimTransparentPart(bitmap: Bitmap): Bitmap? {
+/**
+ * Covert dp to px
+ * @param dp
+ * @param context
+ * @return pixel
+ */
+fun dpToPixel(context: Context, dp: Float): Float {
+    return dp * getDensity(context)
+}
+
+/**
+ * Covert px to dp
+ * @param px
+ * @param context
+ * @return dp
+ */
+fun pixelToDp( context: Context, px: Float): Float {
+    return px / getDensity(context)
+}
+
+/**
+ * Get screen destiny
+ * 120dpi = 0.75
+ * 160dpi = 1 (default)
+ * 240dpi = 1.5
+ * @param context
+ * @return
+ */
+fun getDensity(context: Context): Float {
+    val metrics: DisplayMetrics = context.resources.displayMetrics
+    return metrics.density
+}
+
+fun trimTransparentPart(bitmap: Bitmap): Bitmap {
     val height = bitmap.height
     val width = bitmap.width
     var top = 0
@@ -94,4 +129,30 @@ fun trimTransparentPart(bitmap: Bitmap): Bitmap? {
         }
     }
     return Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
+}
+
+fun cropBitmapTransparency(sourceBitmap: Bitmap): Bitmap {
+    var minX = sourceBitmap.width
+    var minY = sourceBitmap.height
+    var maxX = -1
+    var maxY = -1
+    for (y in 0 until sourceBitmap.height) {
+        for (x in 0 until sourceBitmap.width) {
+            val alpha = sourceBitmap.getPixel(x, y) shr 24 and 255
+            if (alpha > 0) // pixel is not 100% transparent
+            {
+                if (x < minX) minX = x
+                if (x > maxX) maxX = x
+                if (y < minY) minY = y
+                if (y > maxY) maxY = y
+            }
+        }
+    }
+    return Bitmap.createBitmap(
+        sourceBitmap,
+        minX,
+        minY,
+        maxX - minX + 1,
+        maxY - minY + 1
+    )
 }
