@@ -1,18 +1,10 @@
 package com.yhwang.nicole
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.NavController
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
 import com.theapache64.removebg.RemoveBg
 import com.userstar.oqrticket.timber.ReleaseTree
 import com.userstar.oqrticket.timber.ThreadIncludedDebugTree
-import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {

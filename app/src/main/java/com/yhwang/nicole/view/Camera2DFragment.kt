@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.*
 import android.view.LayoutInflater
 import android.view.View
@@ -94,10 +95,11 @@ class Camera2DFragment : Fragment() {
         InjectorUtils.provideCamera2DViewModelFactory(requireContext())
     }
 
-    private lateinit var mode: Mode
+    private var mode = Mode.RemoveBg
     private lateinit var rotateZoomImageView: RotateZoomImageView
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        cameraView.setLifecycleOwner(viewLifecycleOwner)
 
         take_Button.setOnClickListener {
             when (mode) {
@@ -137,8 +139,6 @@ class Camera2DFragment : Fragment() {
             }
         }
 
-        cameraView.setLifecycleOwner(viewLifecycleOwner)
-
         if (requireArguments()["item"]!=null) {
             val item = requireArguments()["item"] as Item
             Timber.i("item id: %d", item.id)
@@ -154,8 +154,34 @@ class Camera2DFragment : Fragment() {
             share_button.text = "分享"
             mode = Mode.ClearBg
         } else {
-            mode = Mode.RemoveBg
+
         }
+
+//        Timber.i("width: %d, height: %d", draggable_item_RelativeLayout.width, draggable_item_RelativeLayout.height)
+//        draggable_item_RelativeLayout.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+//            override fun onLayoutChange(
+//                p0: View?,
+//                p1: Int,
+//                p2: Int,
+//                p3: Int,
+//                p4: Int,
+//                p5: Int,
+//                p6: Int,
+//                p7: Int,
+//                p8: Int
+//            ) {
+//                draggable_item_RelativeLayout.removeOnLayoutChangeListener(this)
+//                Timber.i("width: %d, height: %d", draggable_item_RelativeLayout.width, draggable_item_RelativeLayout.height)
+//                val fileBitmap = fileToBitmap(requireContext(), "test.png")
+//                rotateZoomImageView = RotateZoomImageView(requireContext())
+//                rotateZoomImageView.setImageBitmap(fileBitmap)
+//                rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
+//                if (BuildConfig.DEBUG) { rotateZoomImageView.setBackgroundResource(R.drawable.border) }
+//                val layoutParams = RelativeLayout.LayoutParams(draggable_item_RelativeLayout.width, draggable_item_RelativeLayout.height)
+//                draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
+//                mode = Mode.RemoveBg
+//            }
+//        })
     }
 
     override fun onResume() {
@@ -184,12 +210,13 @@ class Camera2DFragment : Fragment() {
             requireActivity().runOnUiThread {
                 Toast.makeText(requireContext(), "去背完成", Toast.LENGTH_SHORT).show()
 
-                bitmapToFile(requireContext(), trimTransparentPart(noBgBitmap), "test.png", Bitmap.CompressFormat.PNG)
-                val fileBitmap = fileToBitmap(requireContext(), "test.png")
+//                bitmapToFile(requireContext(), trimTransparentPart(noBgBitmap), "test.png", Bitmap.CompressFormat.PNG)
+                val fileBitmap = noBgBitmap
                 rotateZoomImageView = RotateZoomImageView(requireContext())
                 rotateZoomImageView.setImageBitmap(fileBitmap)
                 rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
                 if (BuildConfig.DEBUG) { rotateZoomImageView.setBackgroundResource(R.drawable.border) }
+                Timber.i("width: %d, height: %d", draggable_item_RelativeLayout.width, draggable_item_RelativeLayout.height)
                 val layoutParams = RelativeLayout.LayoutParams(draggable_item_RelativeLayout.width, draggable_item_RelativeLayout.height)
                 draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
 

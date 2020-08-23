@@ -17,7 +17,6 @@ class Camera2DViewModel(
     fun removeBg(bitmap: Bitmap, callback: (bitmap: Bitmap) -> Unit) =
         repository.removeBg(bitmap, callback)
 
-
     fun saveScreenToGallery(bitmap: Bitmap, callback: ()->Unit) =
         repository.saveScreenToGallery(bitmap, callback)
 
