@@ -1,5 +1,6 @@
 package com.yhwang.nicole.repository
 
+import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Bitmap
 import com.theapache64.removebg.RemoveBg
@@ -29,7 +30,12 @@ class Camera2DRepository(
         }
 
         RemoveBg.from(imageFile, object : RemoveBg.RemoveBgCallback {
-            override fun onError(errors: List<ErrorResponse.Error>) { }
+            override fun onError(errors: List<ErrorResponse.Error>) {
+                AlertDialog.Builder(context)
+                    .setMessage(errors.toString())
+                    .setCancelable(true)
+                    .show()
+            }
             override fun onProcessing() { }
             override fun onUploadProgress(progress: Float) { }
             override fun onSuccess(bitmap: Bitmap) {

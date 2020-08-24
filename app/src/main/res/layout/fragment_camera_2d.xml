@@ -12,7 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:keepScreenOn="true"
-        app:cameraAudio="off" />
+        app:cameraAudio="off" >
+    </com.otaliastudios.cameraview.CameraView>
 
     <RelativeLayout
         android:id="@+id/draggable_item_RelativeLayout"
@@ -22,63 +23,53 @@
     </RelativeLayout>
 
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <Button
+        <ImageButton
             android:id="@+id/back_Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:layout_marginStart="10dp"
-            android:layout_gravity="center"
-            android:text="Back"/>
+            android:src="@mipmap/button_back"
+            android:background="@android:color/transparent"
+            app:layout_constraintHorizontal_bias="0.1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
+        <ImageButton
             android:id="@+id/take_Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:layout_margin="10dp"
-            android:text="去背"
+            android:src="@mipmap/button_scissor"
+            android:background="@android:color/transparent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
+        <ImageButton
             android:id="@+id/share_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="10dp"
             android:layout_gravity="center"
-            android:text="清空"/>
-
-    </LinearLayout>
-
-<!--    <androidx.appcompat.widget.Toolbar-->
-<!--        android:id="@+id/toolbar"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="?attr/actionBarSize"-->
-<!--        android:minHeight="?attr/actionBarSize"-->
-<!--        android:background="@android:color/transparent"-->
-<!--        app:navigationIcon="?attr/homeAsUpIndicator"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent">-->
-
-<!--        <TextView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_gravity="center"-->
-<!--            android:gravity="center"-->
-<!--            android:text="Goods"-->
-<!--            android:textColor="@android:color/darker_gray"-->
-<!--            style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"/>-->
-<!--    </androidx.appcompat.widget.Toolbar>-->
+            android:layout_weight="1"
+            android:src="@mipmap/button_share"
+            android:background="@android:color/transparent"
+            app:layout_constraintHorizontal_bias="0.9"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

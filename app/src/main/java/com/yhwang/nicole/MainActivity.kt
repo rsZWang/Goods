@@ -27,6 +27,6 @@ class MainActivity : AppCompatActivity() {
             Timber.plant(ReleaseTree())
         }
 
-        RemoveBg.init("1UzzjTXNCaz991c8qooWVr86")
+        RemoveBg.init("ijNPHcTFooRvp9VgEUhG2WZF")
     }
 }

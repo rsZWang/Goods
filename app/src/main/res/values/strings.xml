@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Goods</string>
+
+    <!--    layout examples-->
+    <string name="example_price"><u>$ 19,999</u></string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

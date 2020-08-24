@@ -22,7 +22,8 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Goods"
+            android:text="GOODS"
+            android:textSize="27sp"
             android:textColor="@android:color/darker_gray"
             style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"/>
     </androidx.appcompat.widget.Toolbar>
@@ -30,50 +31,60 @@
     <View
         android:id="@+id/view"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="1.7dp"
         android:background="@android:color/darker_gray"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
-    <TextView
-        android:id="@+id/hint_TextView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:gravity="center"
-        android:layout_margin="1dp"
-        android:background="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="@+id/item_list_RecyclerView"
-        app:layout_constraintTop_toTopOf="@+id/view" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/item_list_RecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:padding="5dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_FrameLayout"
-        app:layout_constraintTop_toTopOf="@+id/view" />
-
-    <FrameLayout
-        android:id="@+id/bottom_FrameLayout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@android:color/white"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHeight_percent="0.15"
-        app:layout_constraintTop_toBottomOf="@+id/item_list_RecyclerView">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
-        <View
+<!--        <TextView-->
+<!--            android:id="@+id/hint_TextView"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="0dp"-->
+<!--            android:gravity="center"-->
+<!--            android:layout_margin="1dp"-->
+<!--            android:layout_weight="3"-->
+<!--            android:background="@android:color/white" />-->
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/item_list_RecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray" />
+            android:layout_height="0dp"
+            android:padding="5dp"
+            android:layout_weight="5"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_FrameLayout"
+            app:layout_constraintTop_toTopOf="@+id/view" />
 
-        <ImageView
-            android:id="@+id/to_camera_fragment_Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:scaleX="0.7"
-            android:scaleY="0.7"
-            android:src="@drawable/camera" />
-    </FrameLayout>
+        <FrameLayout
+            android:id="@+id/bottom_FrameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_percent="0.15"
+            app:layout_constraintTop_toBottomOf="@+id/item_list_RecyclerView">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1.7dp"
+                android:background="@android:color/darker_gray" />
+
+            <ImageView
+                android:id="@+id/to_camera_fragment_Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:scaleX="0.7"
+                android:scaleY="0.7"
+                android:src="@drawable/camera" />
+        </FrameLayout>
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

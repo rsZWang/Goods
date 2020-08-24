@@ -42,7 +42,7 @@ class ItemListFragment : Fragment() {
         view.findViewById<ImageView>(R.id.to_camera_fragment_Button).setOnClickListener {
             Timber.i("to camera 2D fragment")
             val destination = ItemListFragmentDirections
-                .actionItemListFragmentToCamera2DFragment(null)
+                .actionItemListFragmentToCamera2DFragment()
             findNavController().navigate(destination)
         }
 
@@ -61,10 +61,10 @@ class ItemListFragment : Fragment() {
             requireActivity().runOnUiThread {
                 if (itemList.isNotEmpty()) {
                     (item_list_RecyclerView.adapter as ItemRecyclerViewAdapter).updateList(itemList)
-                    hint_TextView.text = ""
+//                    hint_TextView.text = ""
                 } else {
                     (item_list_RecyclerView.adapter as ItemRecyclerViewAdapter).updateList(ArrayList())
-                    hint_TextView.text = "點擊相機新增項目"
+//                    hint_TextView.text = "點擊相機新增項目"
                 }
             }
         }
@@ -102,7 +102,7 @@ class ItemListFragment : Fragment() {
             holder.itemView.setOnClickListener {
                 Timber.i("pass item: %d", list[position].id)
                 val destination = ItemListFragmentDirections
-                    .actionItemListFragmentToCamera2DFragment(list[position])
+                    .actionItemListFragmentToItemViewFragment(list[position])
                 findNavController().navigate(destination)
             }
             holder.itemImageView.setImageBitmap(fileToBitmap(requireContext(), list[position].itemFileName))

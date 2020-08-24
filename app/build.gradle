@@ -98,4 +98,7 @@ dependencies {
 
     // Picasso
     implementation 'com.squareup.picasso:picasso:2.71828'
+
+    // AndroidUtilsLibrary
+    implementation 'com.gitlab.developerdeveloperdeveloper:androidutilslibrary:1.0.0'
 }
