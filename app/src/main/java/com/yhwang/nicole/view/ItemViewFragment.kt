@@ -38,46 +38,50 @@ class ItemViewFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_item_view, container, false)
 
+        itemBgImageView = view.findViewById(R.id.item_bg_ImageView)
+        itemImageView = view.findViewById(R.id.item_ImageView)
+
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         view.findViewById<ImageView>(R.id.back_arrow_ImageView).setOnClickListener {
             findNavController().popBackStack()
         }
 
-        itemBgImageView = view.findViewById(R.id.item_bg_ImageView)
         itemBgImageView.setImageBitmap(fileToBitmap(requireContext(), item.backgroundFileName))
         itemBgImageView.clipToOutline = true
 
-        itemImageView = view.findViewById(R.id.item_ImageView)
         itemBitmap = fileToBitmap(requireContext(), item.itemFileName)
         itemImageView.setImageBitmap(itemBitmap)
         itemImageView.clipToOutline = true
-        itemImageView.setOnClickListener(DoubleClick(object : DoubleClickListener {
-            override fun onSingleClickEvent(view: View?) {
-                Timber.i("single click")
-                drawOutline()
-            }
-
-            override fun onDoubleClickEvent(view: View?) {
-                Timber.i("double click")
-                val action = ItemViewFragmentDirections
-                    .actionItemViewFragmentToItemFragment(item)
-                findNavController().navigate(action)
-            }
-        }))
+        itemImageView.setOnClickListener {
+            drawOutline()
+        }
+        itemImageView.setOnLongClickListener {
+            Timber.i("navigate to ItemViewFragment")
+            val action = ItemViewFragmentDirections
+                .actionItemViewFragmentToItemFragment(item)
+            findNavController().navigate(action)
+            false
+        }
 
         view.findViewById<ImageView>(R.id.view_in_ar_ImageView).setOnClickListener {
             val destination = ItemViewFragmentDirections
                 .actionItemViewFragmentToCamera2DFragment(item)
             findNavController().navigate(destination)
         }
-
-        return view
     }
 
     private var outlineItemBitmap: Bitmap? = null
     private fun drawOutline() {
         if (isOutlineDrawn) {
+            Timber.i("Remove outline")
             itemImageView.setImageBitmap(itemBitmap)
         } else {
+            Timber.i("Draw outline")
             if (outlineItemBitmap == null) {
                 outlineItemBitmap = drawOutline(
                     itemBitmap, ContextCompat.getColor(

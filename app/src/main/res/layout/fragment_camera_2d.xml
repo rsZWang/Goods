@@ -16,12 +16,11 @@
     </com.otaliastudios.cameraview.CameraView>
 
     <RelativeLayout
-        android:id="@+id/draggable_item_RelativeLayout"
+        android:id="@+id/item_container_RelativeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent">
     </RelativeLayout>
-
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

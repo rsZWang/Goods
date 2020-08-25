@@ -9,6 +9,7 @@ import android.os.*
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.RelativeLayout
@@ -43,46 +44,12 @@ class Camera2DFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_camera_2d, container, false)
 
-        cameraView = view.findViewById(R.id.camera_View)
-        cameraView.addCameraListener(object : CameraListener() {
-            override fun onPictureTaken(result: PictureResult) {
-                super.onPictureTaken(result)
-                result.toBitmap { bitmap ->
-                    if (bitmap != null) {
-                        when (mode) {
-                            Mode.REMOVE_BG -> {
-                                Timber.d("remove bg mode")
-                                Toast.makeText(requireContext(), "去背中...", Toast.LENGTH_LONG).show()
-                                removeBitmapBg(bitmap)
-                            }
-                            Mode.SCREEN_SHOT -> {
-                                Thread {
-                                    Timber.d("screen shot mode")
-                                    viewModel.saveItemAndBg(
-                                        layoutToBitmap(draggable_item_RelativeLayout),
-                                        rotateZoomImageView.x,
-                                        rotateZoomImageView.y,
-                                        bitmap
-                                    ) {
-                                        requireActivity().runOnUiThread {
-                                            Toast.makeText(requireContext(), "存擋完成", Toast.LENGTH_LONG).show()
-                                            take_Button.setImageResource(R.mipmap.button_reset)
-                                            mode = Mode.SHARE
-                                        }
-                                    }
-                                    requireActivity().runOnUiThread { draggable_item_RelativeLayout.background = BitmapDrawable(resources, bitmap) }
-                                }.start()
-                            }
-                            else -> Timber.e("mode error")
-                        }
-                    }
-                }
-            }
-        })
-
         view.findViewById<ImageButton>(R.id.back_Button).setOnClickListener {
             findNavController().popBackStack()
         }
+
+        cameraView = view.findViewById(R.id.camera_View)
+        itemContainerRelativeLayout = view.findViewById(R.id.item_container_RelativeLayout)
 
         return view
     }
@@ -94,6 +61,7 @@ class Camera2DFragment : Fragment() {
 
     private lateinit var mode: Mode
     private lateinit var rotateZoomImageView: RotateZoomImageView
+    private lateinit var itemContainerRelativeLayout: RelativeLayout
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -102,7 +70,7 @@ class Camera2DFragment : Fragment() {
                 Mode.REMOVE_BG -> cameraView.takePictureSnapshot()
                 Mode.SCREEN_SHOT -> cameraView.takePictureSnapshot()
                 Mode.SHARE -> {
-                    draggable_item_RelativeLayout.background = null
+                    itemContainerRelativeLayout.background = null
                     take_Button.setImageResource(R.mipmap.button_camera)
                     mode = Mode.SCREEN_SHOT
                 }
@@ -123,7 +91,7 @@ class Camera2DFragment : Fragment() {
                     Toast.LENGTH_LONG
                 ).show()
 
-                Mode.SHARE -> viewModel.saveScreenToGallery(layoutToBitmap(draggable_item_RelativeLayout)) {
+                Mode.SHARE -> viewModel.saveScreenToGallery(layoutToBitmap(itemContainerRelativeLayout)) {
                     Toast.makeText(
                         requireContext(),
                         "已儲存至相簿",
@@ -134,17 +102,58 @@ class Camera2DFragment : Fragment() {
         }
 
         cameraView.setLifecycleOwner(viewLifecycleOwner)
+        cameraView.addCameraListener(object : CameraListener() {
+            override fun onPictureTaken(result: PictureResult) {
+                super.onPictureTaken(result)
+                result.toBitmap { bitmap ->
+                    if (bitmap != null) {
+                        when (mode) {
+                            Mode.REMOVE_BG -> {
+                                Timber.d("remove bg mode")
+                                Toast.makeText(requireContext(), "去背中...", Toast.LENGTH_LONG).show()
+                                removeBitmapBg(bitmap)
+                            }
+                            Mode.SCREEN_SHOT -> {
+                                Thread {
+                                    Timber.d("screen shot mode")
+                                    viewModel.saveItemAndBg(
+                                        layoutToBitmap(itemContainerRelativeLayout),
+                                        rotateZoomImageView.x,
+                                        rotateZoomImageView.y,
+                                        bitmap
+                                    ) {
+                                        requireActivity().runOnUiThread {
+                                            Toast.makeText(requireContext(), "存擋完成", Toast.LENGTH_LONG).show()
+                                            take_Button.setImageResource(R.mipmap.button_reset)
+                                            mode = Mode.SHARE
+                                        }
+                                    }
+                                    requireActivity().runOnUiThread { itemContainerRelativeLayout.background = BitmapDrawable(resources, bitmap) }
+                                }.start()
+                            }
+                            else -> Timber.e("mode error")
+                        }
+                    }
+                }
+            }
+        })
 
         if (requireArguments()["item"]!=null) {
             val item = requireArguments()["item"] as Item
             Timber.i("item id: %d", item.id)
-            val bitmap = fileToBitmap(requireContext(), item.itemFileName)
+            val bitmap = trimTransparentPart(fileToBitmap(requireContext(), item.itemFileName))
             rotateZoomImageView = RotateZoomImageView(requireContext())
             rotateZoomImageView.setImageBitmap(bitmap)
             rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
             val layoutParams = RelativeLayout.LayoutParams(bitmap.width, bitmap.height)
-            rotateZoomImageView.layoutParams = layoutParams
-            draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
+            itemContainerRelativeLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    itemContainerRelativeLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    rotateZoomImageView.x = ((itemContainerRelativeLayout.width - bitmap.width)/2).toFloat()
+                    rotateZoomImageView.y = ((itemContainerRelativeLayout.height - bitmap.height)/2).toFloat()
+                    itemContainerRelativeLayout.addView(rotateZoomImageView, layoutParams)
+                }
+            })
             take_Button.setImageResource(R.mipmap.button_camera)
             mode = Mode.SCREEN_SHOT
         } else {
@@ -174,8 +183,8 @@ class Camera2DFragment : Fragment() {
                 rotateZoomImageView.setImageBitmap(noBgBitmap)
                 rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
 //                if (BuildConfig.DEBUG) { rotateZoomImageView.setBackgroundResource(R.drawable.border) }
-                val layoutParams = RelativeLayout.LayoutParams(draggable_item_RelativeLayout.width, draggable_item_RelativeLayout.height)
-                draggable_item_RelativeLayout.addView(rotateZoomImageView, layoutParams)
+                val layoutParams = RelativeLayout.LayoutParams(itemContainerRelativeLayout.width, itemContainerRelativeLayout.height)
+                itemContainerRelativeLayout.addView(rotateZoomImageView, layoutParams)
 
                 take_Button.setImageResource(R.mipmap.button_camera)
                 mode = Mode.SCREEN_SHOT

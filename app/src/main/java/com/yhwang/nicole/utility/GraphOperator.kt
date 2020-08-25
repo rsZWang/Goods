@@ -28,7 +28,7 @@ fun layoutToDrawable(resources: Resources, view: View): Drawable {
 }
 
 fun drawOutline(originalBitmap: Bitmap, color: Int) : Bitmap {
-    val strokeWidth = 4
+    val strokeWidth = 20
     val newStrokedBitmap = Bitmap.createBitmap(
         originalBitmap.width + 2 * strokeWidth,
         originalBitmap.height + 2 * strokeWidth,
