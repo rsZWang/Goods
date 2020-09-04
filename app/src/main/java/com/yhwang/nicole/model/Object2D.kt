@@ -4,26 +4,26 @@ import android.os.Parcelable
 import androidx.room.*
 import kotlinx.android.parcel.Parcelize
 
-@Entity(tableName = "item")
+@Entity(tableName = "object2D")
 @Parcelize
 @TypeConverters(com.yhwang.nicole.database.TypeConverters::class)
-class Item(
-    @ColumnInfo(name = "item_file_name") val itemFileName: String,
+class Object2D(
+    @ColumnInfo(name = "file_name") val objectFileName: String,
     @ColumnInfo(name = "x") val x: Float,
     @ColumnInfo(name = "y") val y: Float,
-    @ColumnInfo(name = "item_background_file_name") val backgroundFileName: String,
+    @ColumnInfo(name = "background_file_name") val backgroundFileName: String,
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0
 ) : Parcelable
 
 @Dao
-interface ItemDao {
-    @Query("SELECT * FROM item ")
-    fun getAllItem() : List<Item>
+interface Object2DDao {
+    @Query("SELECT * FROM object2D")
+    fun getAllObject() : List<Object2D>
 
     @Insert
-    fun insertItem(item: Item)
+    fun insertObject(object2D: Object2D)
 
     @Delete
-    fun deleteItem(item: Item)
+    fun deleteObject(object2D: Object2D)
 }

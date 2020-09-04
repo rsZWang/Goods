@@ -4,12 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.yhwang.nicole.model.Item
-import com.yhwang.nicole.model.ItemDao
+import com.yhwang.nicole.model.Object2D
+import com.yhwang.nicole.model.Object2DDao
 
-@Database(entities = [Item::class], version = 1)
+@Database(entities = [Object2D::class], version = 1)
 abstract class GoodsDatabase : RoomDatabase() {
-    abstract fun itemDao(): ItemDao
+    abstract fun object2DDao(): Object2DDao
 
     companion object {
         private var instance: GoodsDatabase? = null
@@ -18,8 +18,7 @@ abstract class GoodsDatabase : RoomDatabase() {
                 instance
                     ?: buildDatabase(
                         context
-                    )
-                        .also { instance = it }
+                    ).also { instance = it }
             }
         }
 

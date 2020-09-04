@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".view.Camera2DFragment">
+    tools:context=".view.Object2DCameraFragment">
 
     <com.otaliastudios.cameraview.CameraView
         android:id="@+id/camera_View"
@@ -16,7 +16,7 @@
     </com.otaliastudios.cameraview.CameraView>
 
     <RelativeLayout
-        android:id="@+id/item_container_RelativeLayout"
+        android:id="@+id/object_container_RelativeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent">

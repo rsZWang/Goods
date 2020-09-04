@@ -1,4 +1,4 @@
-package com.yhwang.nicole
+package com.yhwang.nicole.utility
 
 import android.R
 import android.annotation.SuppressLint

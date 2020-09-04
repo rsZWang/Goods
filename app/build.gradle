@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: "kotlin-kapt"
 apply plugin: "androidx.navigation.safeargs.kotlin"
+apply plugin: 'com.google.ar.sceneform.plugin'
 
 android {
     compileSdkVersion 30
@@ -10,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.yhwang.nicole"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -42,8 +43,8 @@ android {
         jvmTarget = "1.8"
     }
 
-    dataBinding {
-        enabled = true
+    buildFeatures {
+        dataBinding = true
     }
 }
 
@@ -52,7 +53,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation 'androidx.core:core-ktx:1.3.1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
@@ -60,8 +61,8 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.7'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     // ViewModel and LiveData
     implementation "androidx.fragment:fragment-ktx:1.2.5"
@@ -90,15 +91,35 @@ dependencies {
     implementation 'com.theapache64.removebg:removebg:1.0.0' // Remove bg
 
     // Gson
-    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.code.gson:gson:2.8.6'
 
     // Dagger
     implementation 'com.google.dagger:dagger:2.27'
     kapt 'com.google.dagger:dagger-compiler:2.21'
 
-    // Picasso
-    implementation 'com.squareup.picasso:picasso:2.71828'
-
     // AndroidUtilsLibrary
     implementation 'com.gitlab.developerdeveloperdeveloper:androidutilslibrary:1.0.0'
+
+    // Provides ARCore Session and related resources.
+    implementation 'com.google.ar:core:1.19.0'
+    // Provides ArFragment, and other UX resources.
+    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
+    // Alternatively, use ArSceneView without the UX dependency.
+    implementation 'com.google.ar.sceneform:core:1.17.1'
+    implementation 'com.google.ar.sceneform:assets:1.17.1'
 }
+
+sceneform.asset('sampledata/models/table/table.obj', // 'Source Asset Path' specified during import.
+        'default',                            // 'Material Path' specified during import.
+        'sampledata/models/table.sfa',         // '.sfa Output Path' specified during import.
+        'src/main/res/raw/table')              // '.sfb Output Path' specified during import.
+
+sceneform.asset('sampledata/models/car/car.fbx',
+        'default',
+        'sampledata/models/car.sfa',
+        'src/main/res/raw/car')
+
+sceneform.asset('sampledata/models/andy/andy.obj',
+        'default',
+        'sampledata/models/andy.sfa',
+        'src/main/res/raw/andy')

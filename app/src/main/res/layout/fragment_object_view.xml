@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".view.ItemViewFragment">
+    tools:context=".view.ObjectViewFragment">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -42,10 +42,10 @@
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <ImageView
-        android:id="@+id/item_bg_ImageView"
+        android:id="@+id/object_bg_ImageView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/border_item"
+        android:background="@drawable/border_object"
         app:layout_constraintWidth_percent="0.85"
         app:layout_constraintHeight_percent="0.85"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -54,10 +54,10 @@
         app:layout_constraintTop_toBottomOf="@+id/view" />
 
     <ImageView
-        android:id="@+id/item_ImageView"
+        android:id="@+id/object_ImageView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/border_item"
+        android:background="@drawable/border_object"
         app:layout_constraintWidth_percent="0.85"
         app:layout_constraintHeight_percent="0.85"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -71,7 +71,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
         android:src="@mipmap/button_view_in_ar"
-        app:layout_constraintEnd_toEndOf="@+id/item_bg_ImageView"
-        app:layout_constraintTop_toTopOf="@+id/item_bg_ImageView" />
+        app:layout_constraintEnd_toEndOf="@+id/object_bg_ImageView"
+        app:layout_constraintTop_toTopOf="@+id/object_bg_ImageView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,76 +3,87 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/itemListFragment">
+    app:startDestination="@id/objectListFragment">
 
     <fragment
-        android:id="@+id/itemListFragment"
-        android:name="com.yhwang.nicole.view.ItemListFragment"
-        android:label="Goods"
-        tools:layout="@layout/fragment_item_list" >
+        android:id="@+id/objectListFragment"
+        android:name="com.yhwang.nicole.view.ObjectListFragment"
+        android:label="fragment_object_list"
+        tools:layout="@layout/fragment_object_list" >
 
         <action
-            android:id="@+id/action_itemListFragment_to_camera2DFragment"
-            app:destination="@id/camera2DFragment" />
+            android:id="@+id/action_objectListFragment_to_object2DCameraFragment"
+            app:destination="@id/object2DCameraFragment" />
         <action
-            android:id="@+id/action_itemListFragment_to_itemViewFragment"
-            app:destination="@id/itemViewFragment">
+            android:id="@+id/action_objectListFragment_to_ObjectViewFragment"
+            app:destination="@id/objectViewFragment">
 
             <argument
-                android:name="item"
-                app:argType="com.yhwang.nicole.model.Item"
-                app:nullable="true"
-                android:defaultValue="@null"/>
-        </action>
-    </fragment>
-    <fragment
-        android:id="@+id/camera2DFragment"
-        android:name="com.yhwang.nicole.view.Camera2DFragment"
-        android:label="Goods"
-        tools:layout="@layout/fragment_camera_2d" >
-        <action
-            android:id="@+id/action_camera2DFragment_to_itemViewFragment"
-            app:destination="@id/itemViewFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/itemViewFragment"
-        android:name="com.yhwang.nicole.view.ItemViewFragment"
-        android:label="fragment_item_view"
-        tools:layout="@layout/fragment_item_view" >
-        <action
-            android:id="@+id/action_itemViewFragment_to_itemFragment"
-            app:destination="@id/itemDetailFragment">
-            <argument
-                android:name="item"
-                app:argType="com.yhwang.nicole.model.Item"
+                android:name="object2D"
+                app:argType="com.yhwang.nicole.model.Object2D"
                 app:nullable="true"
                 android:defaultValue="@null"/>
         </action>
         <action
-            android:id="@+id/action_itemViewFragment_to_camera2DFragment"
-            app:destination="@id/camera2DFragment">
+            android:id="@+id/action_objectListFragment_to_object3DCameraFragment"
+            app:destination="@id/object3DCameraFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/object2DCameraFragment"
+        android:name="com.yhwang.nicole.view.Object2DCameraFragment"
+        android:label="fragment_object_2d_camera"
+        tools:layout="@layout/fragment_object_2d_camera" >
+        <action
+            android:id="@+id/action_camera2DFragment_to_objectViewFragment"
+            app:destination="@id/objectViewFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/objectViewFragment"
+        android:name="com.yhwang.nicole.view.ObjectViewFragment"
+        android:label="fragment_object_view"
+        tools:layout="@layout/fragment_object_view" >
+        <action
+            android:id="@+id/action_objectViewFragment_to_ObjectDetailFragment"
+            app:destination="@id/objectDetailFragment">
             <argument
-                android:name="item"
-                app:argType="com.yhwang.nicole.model.Item"
+                android:name="object2D"
+                app:argType="com.yhwang.nicole.model.Object2D"
+                app:nullable="true"
+                android:defaultValue="@null"/>
+        </action>
+        <action
+            android:id="@+id/action_objectViewFragment_to_object2DCameraFragment"
+            app:destination="@id/object2DCameraFragment">
+            <argument
+                android:name="object2D"
+                app:argType="com.yhwang.nicole.model.Object2D"
                 app:nullable="true"
                 android:defaultValue="@null"/>
         </action>
     </fragment>
 
     <fragment
-        android:id="@+id/itemDetailFragment"
-        android:name="com.yhwang.nicole.view.ItemDetailFragment"
-        android:label="item_fragment"
-        tools:layout="@layout/fragment_detail_item" >
+        android:id="@+id/objectDetailFragment"
+        android:name="com.yhwang.nicole.view.ObjectDetailFragment"
+        android:label="fragment_object_detail"
+        tools:layout="@layout/fragment_object_detail" >
         <action
-            android:id="@+id/action_itemDetailFragment_to_camera2DFragment"
-            app:destination="@id/camera2DFragment">
+            android:id="@+id/action_objectDetailFragment_to_object2DCameraFragment"
+            app:destination="@id/object2DCameraFragment">
             <argument
-                android:name="item"
-                app:argType="com.yhwang.nicole.model.Item"
+                android:name="object2D"
+                app:argType="com.yhwang.nicole.model.Object2D"
                 app:nullable="true"
                 android:defaultValue="@null"/>
         </action>
+        <action
+            android:id="@+id/action_objectDetailFragment_to_object3DCameraFragment"
+            app:destination="@id/object3DCameraFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/object3DCameraFragment"
+        android:name="com.yhwang.nicole.view.Object3DCameraFragment"
+        android:label="fragment_object_3d_camera"
+        tools:layout="@layout/fragment_object_3d_camera" />
 </navigation>

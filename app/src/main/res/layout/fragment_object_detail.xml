@@ -4,13 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".view.ItemDetailFragment">
+    tools:context=".view.ObjectDetailFragment">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:minHeight="?attr/actionBarSize"
         android:background="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -18,8 +17,9 @@
 
         <ImageView
             android:id="@+id/back_arrow_ImageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="?attr/actionBarSize"
+            android:scaleType="center"
             android:src="@mipmap/button_navigation_back_arrow"/>
 
         <TextView
@@ -44,20 +44,28 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="25dp"
-        android:foreground="@drawable/border_item"
+        android:foreground="@drawable/border_object"
         app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
         app:layout_constraintTop_toBottomOf="@+id/view">
 
-        <ImageView
-            android:id="@+id/item_ImageView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.8"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.8" />
+<!--        <ImageView-->
+<!--            android:id="@+id/item_ImageView"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="0dp"-->
+<!--            app:layout_constraintBottom_toBottomOf="parent"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintHeight_percent="0.8"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            app:layout_constraintWidth_percent="0.8" />-->
+
+
+        <com.google.ar.sceneform.SceneView
+            android:id="@+id/object_3d_SceneView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:foreground="@drawable/border_object"
+            android:background="@android:color/white"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -73,7 +81,7 @@
         tools:layout_editor_absoluteX="15dp">
 
         <LinearLayout
-            android:id="@+id/item_detail_LinerLayout"
+            android:id="@+id/object_detail_LinerLayout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -81,16 +89,16 @@
             app:layout_constraintWidth_percent="0.4">
 
             <TextView
-                android:id="@+id/item_no_title_TextView"
+                android:id="@+id/object_no_title_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
                 android:includeFontPadding="false"
-                android:text="Item no."
+                android:text="Object no."
                 android:textSize="17sp"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/item_no_TextView"
+                android:id="@+id/object_no_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-3dp"
@@ -101,7 +109,7 @@
 
 
             <TextView
-                android:id="@+id/item_material_title_TextView"
+                android:id="@+id/object_material_title_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:includeFontPadding="false"
@@ -109,7 +117,7 @@
                 android:textSize="17sp"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/item_material_TextView"
+                android:id="@+id/object_material_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-3dp"
@@ -120,7 +128,7 @@
 
 
             <TextView
-                android:id="@+id/item_colour_title_TextView"
+                android:id="@+id/object_colour_title_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:includeFontPadding="false"
@@ -128,18 +136,18 @@
                 android:textSize="17sp"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/item_colour_TextView"
+                android:id="@+id/object_colour_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-3dp"
                 android:layout_marginBottom="10dp"
                 android:includeFontPadding="false"
-                android:text="Item No."
+                android:text="Object No."
                 android:textSize="17sp" />
 
 
             <TextView
-                android:id="@+id/item_dimensions_title_TextView"
+                android:id="@+id/object_dimensions_title_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:includeFontPadding="false"
@@ -147,7 +155,7 @@
                 android:textSize="17sp"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/item_dimensions_TextView"
+                android:id="@+id/object_dimensions_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-3dp"
@@ -158,7 +166,7 @@
 
 
             <TextView
-                android:id="@+id/item_weight_title_TextView"
+                android:id="@+id/object_weight_title_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:includeFontPadding="false"
@@ -166,7 +174,7 @@
                 android:textSize="17sp"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/item_weight_TextView"
+                android:id="@+id/object_weight_TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-3dp"
@@ -180,7 +188,7 @@
             android:layout_width="1.7dp"
             android:layout_height="match_parent"
             android:background="@android:color/darker_gray"
-            app:layout_constraintStart_toEndOf="@+id/item_detail_LinerLayout" />
+            app:layout_constraintStart_toEndOf="@+id/object_detail_LinerLayout" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/linearLayout"
@@ -194,7 +202,7 @@
             tools:layout_editor_absoluteY="0dp">
 
             <TextView
-                android:id="@+id/item_price_title_TextView"
+                android:id="@+id/object_price_title_TextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -205,20 +213,20 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/item_price_TextView"
+                android:id="@+id/object_price_TextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
                 android:text="@string/example_price"
                 android:textSize="25sp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/item_price_title_TextView" />
+                app:layout_constraintTop_toBottomOf="@+id/object_price_title_TextView" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/view_in_ar_ConstraintLayout"
                 android:layout_width="0dp"
                 android:layout_height="110dp"
-                android:background="@drawable/border_item_view_in_ar"
+                android:background="@drawable/border_object_2d"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -263,7 +271,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="0dp"
                 android:layout_height="110dp"
-                android:background="@drawable/border_item_view_in_ar"
+                android:background="@drawable/border_object_2d"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".view.ItemListFragment"
+    tools:context=".view.ObjectListFragment"
     android:orientation="vertical">
 
     <androidx.appcompat.widget.Toolbar
@@ -52,7 +52,7 @@
 <!--            android:background="@android:color/white" />-->
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/item_list_RecyclerView"
+            android:id="@+id/object_list_RecyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:padding="5dp"
@@ -68,7 +68,7 @@
             android:background="@android:color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHeight_percent="0.15"
-            app:layout_constraintTop_toBottomOf="@+id/item_list_RecyclerView">
+            app:layout_constraintTop_toBottomOf="@+id/object_list_RecyclerView">
 
             <View
                 android:layout_width="match_parent"

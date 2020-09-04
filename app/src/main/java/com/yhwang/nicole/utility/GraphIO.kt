@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.ImageView
-import com.squareup.picasso.Picasso
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -60,7 +59,7 @@ private fun writeBitmapToStream(bitmap: Bitmap, outputStream: OutputStream?) {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
             outputStream.close()
         } catch (e: Exception) {
-            e.printStackTrace()
+            throw e
         }
     }
 }
@@ -95,10 +94,10 @@ fun deleteImageFile(context: Context, fileName: String) {
     }
 }
 
-fun loadImageFileByPicasso(context: Context, fileName: String, target: ImageView) {
-    val path = "file://${ContextWrapper(context).getDir(Environment.DIRECTORY_PICTURES, Context.MODE_PRIVATE).path}/$fileName"
-    Picasso.get()
-        .load(path)
-        .noPlaceholder()
-        .into(target)
-}
+//fun loadImageFileByPicasso(context: Context, fileName: String, target: ImageView) {
+//    val path = "file://${ContextWrapper(context).getDir(Environment.DIRECTORY_PICTURES, Context.MODE_PRIVATE).path}/$fileName"
+//    Picasso.get()
+//        .load(path)
+//        .noPlaceholder()
+//        .into(target)
+//}

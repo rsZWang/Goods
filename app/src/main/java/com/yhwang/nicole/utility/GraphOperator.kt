@@ -2,14 +2,13 @@ package com.yhwang.nicole.utility
 
 import android.content.Context
 import android.content.res.Resources
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Matrix
-import android.graphics.PorterDuff
+import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.DisplayMetrics
 import android.view.View
+import androidx.core.content.ContextCompat
+import com.yhwang.nicole.R
 import java.util.*
 
 
@@ -155,4 +154,20 @@ fun cropBitmapTransparency(sourceBitmap: Bitmap): Bitmap {
         maxX - minX + 1,
         maxY - minY + 1
     )
+}
+
+fun highlight(context: Context, src: Bitmap): Bitmap {
+    val output = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(output)
+    canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+    val paintBlur = Paint()
+    paintBlur.maskFilter = BlurMaskFilter(30F, BlurMaskFilter.Blur.NORMAL)
+    val offsetXY = IntArray(2)
+    val alpha = src.extractAlpha(paintBlur, offsetXY)
+    val ptAlphaColor = Paint()
+    ptAlphaColor.color = ContextCompat.getColor(context, R.color.objectBlue)
+    canvas.drawBitmap(alpha, offsetXY[0].toFloat(), offsetXY[1].toFloat(), ptAlphaColor)
+    alpha.recycle()
+    canvas.drawBitmap(src, 0F, 0F, null)
+    return output
 }

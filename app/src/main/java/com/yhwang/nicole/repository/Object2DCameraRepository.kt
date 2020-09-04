@@ -6,7 +6,7 @@ import android.graphics.Bitmap
 import com.theapache64.removebg.RemoveBg
 import com.theapache64.removebg.utils.ErrorResponse
 import com.yhwang.nicole.database.GoodsDatabase
-import com.yhwang.nicole.model.Item
+import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.utility.bitmapToFile
 import com.yhwang.nicole.utility.saveBitmapToGallery
 import timber.log.Timber
@@ -14,7 +14,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class Camera2DRepository(
+class Object2DCameraRepository(
     private val context: Context,
     private val roomDatabase: GoodsDatabase
 ) {
@@ -49,12 +49,12 @@ class Camera2DRepository(
         saveBitmapToGallery(context, bitmap, callback)
     }
 
-    fun saveItemAndBg(item: Bitmap, x: Float, y: Float, background: Bitmap, callback: () -> Unit) {
-        val itemName = "item_" + System.currentTimeMillis().toString() + ".png"
-        val backgroundName = "item_bg_" + System.currentTimeMillis().toString() + ".jpeg"
-        bitmapToFile(context, item, itemName, Bitmap.CompressFormat.PNG)
+    fun saveObjectAndBg(obj: Bitmap, x: Float, y: Float, background: Bitmap, callback: () -> Unit) {
+        val objectName = "object_2d_" + System.currentTimeMillis().toString() + ".png"
+        val backgroundName = "object_2d_bg_" + System.currentTimeMillis().toString() + ".jpeg"
+        bitmapToFile(context, obj, objectName, Bitmap.CompressFormat.PNG)
         bitmapToFile(context, background, backgroundName, Bitmap.CompressFormat.JPEG)
-        roomDatabase.itemDao().insertItem(Item(itemName, x, y, backgroundName))
+        roomDatabase.object2DDao().insertObject(Object2D(objectName, x, y, backgroundName))
         callback()
     }
 }
