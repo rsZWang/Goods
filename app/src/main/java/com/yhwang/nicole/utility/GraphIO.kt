@@ -1,15 +1,20 @@
 package com.yhwang.nicole.utility
 
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.ImageView
+import com.theapache64.removebg.RemoveBg
+import com.theapache64.removebg.utils.ErrorResponse
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -64,6 +69,12 @@ private fun writeBitmapToStream(bitmap: Bitmap, outputStream: OutputStream?) {
     }
 }
 
+fun assetsImageToDrawable(assetManager: AssetManager, fileName: String) : Drawable {
+    Timber.i("asset image name: obj_3d_${fileName}_original.jpeg")
+    val inputStream = assetManager.open("objImage/obj_3d_${fileName}_original.jpeg")
+    return Drawable.createFromStream(inputStream, null)
+}
+
 fun fileToBitmap(context: Context, fileName: String) : Bitmap {
     var file = ContextWrapper(context).getDir(Environment.DIRECTORY_PICTURES, Context.MODE_PRIVATE)
     file = File(file, fileName)
@@ -92,6 +103,33 @@ fun deleteImageFile(context: Context, fileName: String) {
     } else {
         Timber.i("fail to delete $fileName")
     }
+}
+
+fun removeBg(context: Context, origin: Bitmap, callback: (bitmap: Bitmap) -> Unit) {
+    val imageFile = File(context.cacheDir, "capturedImage.jpeg")
+    try {
+        val outputStream = FileOutputStream(imageFile)
+        origin.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+        outputStream.flush()
+        outputStream.close()
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+
+    RemoveBg.from(imageFile, object : RemoveBg.RemoveBgCallback {
+        override fun onError(errors: List<ErrorResponse.Error>) {
+            AlertDialog.Builder(context)
+                .setMessage(errors.toString())
+                .setCancelable(true)
+                .show()
+        }
+        override fun onProcessing() { }
+        override fun onUploadProgress(progress: Float) { }
+        override fun onSuccess(bitmap: Bitmap) {
+            Timber.d("remove bg successfully")
+            callback(bitmap)
+        }
+    })
 }
 
 //fun loadImageFileByPicasso(context: Context, fileName: String, target: ImageView) {

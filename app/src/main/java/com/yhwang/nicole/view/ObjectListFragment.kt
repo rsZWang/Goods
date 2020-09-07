@@ -2,9 +2,14 @@ package com.yhwang.nicole.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.AssetManager
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -12,36 +17,72 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yhwang.nicole.R
+import com.yhwang.nicole.adapter.Object2DListRecyclerViewAdapter
+import com.yhwang.nicole.adapter.Object3DListRecyclerViewAdapter
 import com.yhwang.nicole.database.GoodsDatabase
 import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.repository.ObjectListRepository
-import com.yhwang.nicole.utility.*
+import com.yhwang.nicole.utility.fileToBitmap
 import com.yhwang.nicole.viewModel.ObjectListViewModel
 import kotlinx.android.synthetic.main.fragment_object_list.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
-import kotlin.collections.ArrayList
+import java.io.InputStream
 
+
+@SuppressLint("SetTextI18n")
 class ObjectListFragment : Fragment() {
 
+    enum class Mode {
+        OBJECT_2D, OBJECT_3D
+    }
+    private var mode = Mode.OBJECT_2D
+
+    private lateinit var switchModeButton: Button
+    private lateinit var object2DListRecyclerView: RecyclerView
+    private lateinit var object3DListRecyclerView: RecyclerView
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_object_list, container, false)
 
-        val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        switchModeButton = view.findViewById<Button>(R.id.switch_mode_Button)
+        switchModeButton.setOnClickListener {
+            switchMode()
+        }
+
+        var layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         layoutManager.isItemPrefetchEnabled = true
         layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
-        val objectListRecyclerView = view.findViewById<RecyclerView>(R.id.object_list_RecyclerView)
-        objectListRecyclerView.layoutManager = layoutManager
-        objectListRecyclerView.adapter = ObjectListRecyclerViewAdapter(requireContext())
+        object2DListRecyclerView = view.findViewById(R.id.object_2d_list_RecyclerView)
+        object2DListRecyclerView.layoutManager = layoutManager
+        object2DListRecyclerView.adapter = Object2DListRecyclerViewAdapter(requireContext(), viewModel, findNavController())
+
+        layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        layoutManager.isItemPrefetchEnabled = true
+        layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
+        object3DListRecyclerView = view.findViewById(R.id.object_3d_list_RecyclerView)
+        object3DListRecyclerView.layoutManager = layoutManager
+        object3DListRecyclerView.adapter = Object3DListRecyclerViewAdapter(requireContext(), viewModel, requireContext().assets, findNavController())
 
         view.findViewById<ImageView>(R.id.to_camera_fragment_Button).setOnClickListener {
-            Timber.i("to camera 2D fragment")
-//            val destination = ItemListFragmentDirections
-//                .actionItemListFragmentToCamera2DFragment()
-            val destination = ObjectListFragmentDirections.actionObjectListFragmentToObject3DCameraFragment()
-            findNavController().navigate(destination)
+            when (mode) {
+                Mode.OBJECT_2D -> {
+                    val destination = ObjectListFragmentDirections
+                        .actionObjectListFragmentToObject2DCameraFragment()
+                    findNavController().navigate(destination)
+                }
+
+                Mode.OBJECT_3D -> {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setMessage("目前暫時不支援3D拍照")
+                        .setPositiveButton("OK", null)
+                        .setCancelable(false)
+                        .show()
+                }
+            }
         }
 
         return view
@@ -51,69 +92,63 @@ class ObjectListFragment : Fragment() {
         ObjectListViewModel.Companion.Factory(
             ObjectListRepository(
                 requireContext(),
-                GoodsDatabase.getInstance(requireContext())!!)
+                GoodsDatabase.getInstance(requireContext())!!
+            )
         )
     }
-    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.object2DList.observe(viewLifecycleOwner) { objectList ->
+        viewModel.object2DList.observe(viewLifecycleOwner) { list ->
             Timber.i("get object 2d list")
             requireActivity().runOnUiThread {
-                if (objectList.isNotEmpty()) {
-                    (object_list_RecyclerView.adapter as ObjectListRecyclerViewAdapter).updateList(objectList)
-//                    hint_TextView.text = ""
-                } else {
-                    (object_list_RecyclerView.adapter as ObjectListRecyclerViewAdapter).updateList(ArrayList())
-//                    hint_TextView.text = "點擊相機新增項目"
-                }
+                (object2DListRecyclerView.adapter as Object2DListRecyclerViewAdapter).updateList(list)
             }
         }
-        viewModel.updateObject2DList()
+
+        viewModel.object3DList.observe(viewLifecycleOwner) { list ->
+            Timber.i("get object 3d list")
+            requireActivity().runOnUiThread {
+                (object3DListRecyclerView.adapter as Object3DListRecyclerViewAdapter).updateList(list)
+            }
+        }
+
+        GlobalScope.launch {
+            viewModel.updateObject2DList()
+        }
+
+        GlobalScope.launch {
+            viewModel.getObject3DList(requireContext().assets!!)
+        }
+
+        switchMode()
     }
 
-    inner class ObjectListRecyclerViewAdapter(
-        private val context: Context
-    ) : RecyclerView.Adapter<ObjectListRecyclerViewAdapter.ViewHolder>() {
-
-        var list = ArrayList<Object2D>()
-        fun updateList(list: ArrayList<Object2D>) {
-            Timber.d("update object 2d list")
-            this.list = list
-            notifyDataSetChanged()
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-           return ViewHolder(LayoutInflater.from(context)
-                .inflate(R.layout.card_view_object, parent, false))
-        }
-        override fun getItemCount(): Int = list.size
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.itemView.setOnLongClickListener {
-                MaterialAlertDialogBuilder(context)
-                    .setMessage("確定要刪除這個物件？")
-                    .setNegativeButton("取消", null)
-                    .setPositiveButton("確定") { _, _ ->
-                        Thread { viewModel.removeObject(list[position]) }.start()
-                    }
-                    .setCancelable(false)
-                    .show()
-                true
+    private fun switchMode() {
+        when (mode) {
+            Mode.OBJECT_2D -> {
+                mode = Mode.OBJECT_3D
+                switchModeButton.text = "3D"
+                object2DListRecyclerView.visibility = View.INVISIBLE
+                object3DListRecyclerView.visibility = View.VISIBLE
+                empty_hint_TextView.visibility = if ((object3DListRecyclerView.adapter as Object3DListRecyclerViewAdapter).list.size <= 0) {
+                    View.VISIBLE
+                } else {
+                    View.INVISIBLE
+                }
             }
-            holder.itemView.setOnClickListener {
-                Timber.i("pass object: %d", list[position].id)
-                val destination = ObjectListFragmentDirections
-                    .actionObjectListFragmentToObjectViewFragment(list[position])
-                findNavController().navigate(destination)
-            }
-            holder.objectBgImageView.setImageBitmap(fileToBitmap(requireContext(), list[position].backgroundFileName))
-            holder.objectImageView.setImageBitmap(fileToBitmap(requireContext(), list[position].objectFileName))
-        }
 
-        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val objectBgImageView: ImageView = view.findViewById(R.id.object_bg_ImageView)
-            val objectImageView: ImageView = view.findViewById(R.id.object_ImageView)
+            Mode.OBJECT_3D -> {
+                mode = Mode.OBJECT_2D
+                switchModeButton.text = "2D"
+                object2DListRecyclerView.visibility = View.VISIBLE
+                object3DListRecyclerView.visibility = View.INVISIBLE
+                empty_hint_TextView.visibility = if ((object2DListRecyclerView.adapter as Object2DListRecyclerViewAdapter).list.size <= 0) {
+                    View.VISIBLE
+                } else {
+                    View.INVISIBLE
+                }
+            }
         }
     }
 }
