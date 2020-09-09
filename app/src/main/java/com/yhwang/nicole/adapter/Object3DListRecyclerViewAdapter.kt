@@ -9,8 +9,7 @@ import android.widget.ImageView
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.yhwang.nicole.R
-import com.yhwang.nicole.utility.assetsImageToDrawable
-import com.yhwang.nicole.utility.fileToBitmap
+import com.yhwang.nicole.utility.assetsImageToBitmap
 import com.yhwang.nicole.view.ObjectListFragmentDirections
 import com.yhwang.nicole.viewModel.ObjectListViewModel
 import timber.log.Timber
@@ -55,7 +54,7 @@ class Object3DListRecyclerViewAdapter(
                 .actionObjectListFragmentToObjectViewFragment(null, list[position])
             navController.navigate(destination)
         }
-        holder.objectBgImageView.setImageDrawable(assetsImageToDrawable(assetManager, list[position]))
+        holder.objectBgImageView.setImageBitmap(assetsImageToBitmap(assetManager, "${list[position]}_original.jpeg"))
 //        holder.objectImageView.setImageBitmap(
 //            fileToBitmap(
 //                context,

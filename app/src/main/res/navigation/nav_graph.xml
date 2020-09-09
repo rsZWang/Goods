@@ -38,11 +38,13 @@
         android:id="@+id/object2DCameraFragment"
         android:name="com.yhwang.nicole.view.Object2DCameraFragment"
         android:label="fragment_object_2d_camera"
-        tools:layout="@layout/fragment_object_2d_camera" >
-        <action
-            android:id="@+id/action_camera2DFragment_to_objectViewFragment"
-            app:destination="@id/objectViewFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_object_2d_camera" />
+
+    <fragment
+        android:id="@+id/object3DCameraFragment"
+        android:name="com.yhwang.nicole.view.Object3DCameraFragment"
+        android:label="fragment_object_3d_camera"
+        tools:layout="@layout/fragment_object_3d_camera" />
 
     <fragment
         android:id="@+id/objectViewFragment"
@@ -57,6 +59,11 @@
                 app:argType="com.yhwang.nicole.model.Object2D"
                 app:nullable="true"
                 android:defaultValue="@null"/>
+            <argument
+                android:name="object3D"
+                app:argType="string"
+                app:nullable="true"
+                android:defaultValue="@null"/>
         </action>
         <action
             android:id="@+id/action_objectViewFragment_to_object2DCameraFragment"
@@ -64,6 +71,15 @@
             <argument
                 android:name="object2D"
                 app:argType="com.yhwang.nicole.model.Object2D"
+                app:nullable="true"
+                android:defaultValue="@null"/>
+        </action>
+        <action
+            android:id="@+id/action_objectViewFragment_to_object3DCameraFragment"
+            app:destination="@id/object3DCameraFragment" >
+            <argument
+                android:name="object3D"
+                app:argType="string"
                 app:nullable="true"
                 android:defaultValue="@null"/>
         </action>
@@ -85,11 +101,12 @@
         </action>
         <action
             android:id="@+id/action_objectDetailFragment_to_object3DCameraFragment"
-            app:destination="@id/object3DCameraFragment" />
+            app:destination="@id/object3DCameraFragment">
+            <argument
+                android:name="object3D"
+                app:argType="string"
+                app:nullable="true"
+                android:defaultValue="@null"/>
+        </action>
     </fragment>
-    <fragment
-        android:id="@+id/object3DCameraFragment"
-        android:name="com.yhwang.nicole.view.Object3DCameraFragment"
-        android:label="fragment_object_3d_camera"
-        tools:layout="@layout/fragment_object_3d_camera" />
 </navigation>

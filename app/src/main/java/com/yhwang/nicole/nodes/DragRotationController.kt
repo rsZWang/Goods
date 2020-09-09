@@ -1,6 +1,7 @@
-package com.nouman.sceneview.nodes
+package com.yhwang.nicole.nodes
 
 import android.os.Handler
+import android.os.Looper
 import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
@@ -10,15 +11,12 @@ import com.google.ar.sceneform.ux.DragGestureRecognizer
 import kotlin.math.cos
 import kotlin.math.sin
 
-
 class DragRotationController(
-        private val transformableNode: DragTransformableNode,
-        gestureRecognizer: DragGestureRecognizer
-) :
-    BaseTransformationController<DragGesture>(transformableNode, gestureRecognizer) {
+    private val transformableNode: DragTransformableNode,
+    gestureRecognizer: DragGestureRecognizer
+) : BaseTransformationController<DragGesture>(transformableNode, gestureRecognizer) {
 
     companion object {
-
         private const val initialLat = 26.15444376319647
         private const val initialLong = 18.995950736105442
 
@@ -42,12 +40,12 @@ class DragRotationController(
     }
 
     private fun getZ(lat: Double, long: Double): Float {
-        return (transformableNode.radius * cos(Math.toRadians(lat)) * Math.cos(Math.toRadians(long))).toFloat()
+        return (transformableNode.radius * cos(Math.toRadians(lat)) * cos(Math.toRadians(long))).toFloat()
     }
 
     override fun onActivated(node: Node?) {
         super.onActivated(node)
-        Handler().postDelayed({
+        Handler(Looper.getMainLooper()).postDelayed({
             transformCamera(lat, long)
         }, 0)
     }

@@ -43,7 +43,7 @@ class ObjectListRepository(
 
     fun getObject3DList(assetManager: AssetManager) : ArrayList<String> {
         val nameList = ArrayList<String>()
-        val list = assetManager.list("objImage")!!
+        val list = assetManager.list("object")!!
         for (fileName in list) {
             var name = fileName.substringAfterLast("3d_")
             name = name.substringBefore("_")

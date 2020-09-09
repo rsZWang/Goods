@@ -69,10 +69,10 @@ private fun writeBitmapToStream(bitmap: Bitmap, outputStream: OutputStream?) {
     }
 }
 
-fun assetsImageToDrawable(assetManager: AssetManager, fileName: String) : Drawable {
-    Timber.i("asset image name: obj_3d_${fileName}_original.jpeg")
-    val inputStream = assetManager.open("objImage/obj_3d_${fileName}_original.jpeg")
-    return Drawable.createFromStream(inputStream, null)
+fun assetsImageToBitmap(assetManager: AssetManager, fileName: String) : Bitmap {
+    Timber.i("asset image name: obj_3d_${fileName}")
+    val inputStream = assetManager.open("object/obj_3d_${fileName}")
+    return BitmapFactory.decodeStream(inputStream)
 }
 
 fun fileToBitmap(context: Context, fileName: String) : Bitmap {

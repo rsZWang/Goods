@@ -51,7 +51,7 @@ class Object2DListRecyclerViewAdapter(
         holder.itemView.setOnClickListener {
             Timber.i("pass object: %d", list[position].id)
             val destination = ObjectListFragmentDirections
-                .actionObjectListFragmentToObjectViewFragment(list[position])
+                .actionObjectListFragmentToObjectViewFragment(list[position], null)
             navController.navigate(destination)
         }
         holder.objectBgImageView.setImageBitmap(

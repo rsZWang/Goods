@@ -112,14 +112,14 @@ dependencies {
 sceneform.asset('sampledata/models/table/table.obj', // 'Source Asset Path' specified during import.
         'default',                            // 'Material Path' specified during import.
         'sampledata/models/table.sfa',         // '.sfa Output Path' specified during import.
-        'src/main/res/raw/table')              // '.sfb Output Path' specified during import.
+        'src/main/assets/object/table')              // '.sfb Output Path' specified during import.
 
 sceneform.asset('sampledata/models/car/car.fbx',
         'default',
         'sampledata/models/car.sfa',
-        'src/main/res/raw/car')
+        'src/main/assets/object/car')
 
 sceneform.asset('sampledata/models/andy/andy.obj',
         'default',
         'sampledata/models/andy.sfa',
-        'src/main/res/raw/andy')
+        'src/main/assets/object/andy')

@@ -9,10 +9,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.yhwang.nicole.Mode
 import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Object2D
-import com.yhwang.nicole.utility.fileToBitmap
-import com.yhwang.nicole.utility.highlight
+import com.yhwang.nicole.utility.*
 import timber.log.Timber
 import java.util.*
 
@@ -20,18 +21,24 @@ import java.util.*
 @SuppressLint("ClickableViewAccessibility")
 class ObjectViewFragment : Fragment() {
 
+    private lateinit var mode: Mode
     private lateinit var object2D: Object2D
+    private lateinit var object3D: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            object2D = it["object2D"] as Object2D
+            if (it["object2D"]!=null) {
+                object2D = it["object2D"] as Object2D
+                mode = Mode.OBJECT_2D
+            } else if (it["object3D"]!=null) {
+                object3D = it["object3D"] as String
+                mode = Mode.OBJECT_3D
+            }
         }
     }
 
     private lateinit var objectBgImageView: ImageView
     private lateinit var objectImageView: ImageView
-    private lateinit var objectBitmap: Bitmap
-    private var isOutlineDrawn = false
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -44,7 +51,8 @@ class ObjectViewFragment : Fragment() {
         return view
     }
 
-    val timer = Timer()
+    private lateinit var objectBitmap: Bitmap
+    private lateinit var timer: Timer
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -52,25 +60,50 @@ class ObjectViewFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        objectBgImageView.setImageBitmap(fileToBitmap(requireContext(), object2D.backgroundFileName))
-        objectBgImageView.clipToOutline = true
-
-        objectBitmap = fileToBitmap(requireContext(), object2D.objectFileName)
+        if (mode == Mode.OBJECT_2D) {
+            objectBgImageView.setImageBitmap(fileToBitmap(requireContext(), object2D.backgroundFileName))
+            objectBitmap = fileToBitmap(requireContext(), object2D.objectFileName)
+        } else if (mode == Mode.OBJECT_3D) {
+            objectBgImageView.setImageBitmap(assetsImageToBitmap(requireContext().assets, "${object3D}_bg.jpeg"))
+            objectBitmap = assetsImageToBitmap(requireContext().assets, "${object3D}.png")
+        }
         objectImageView.setImageBitmap(objectBitmap)
-        objectImageView.clipToOutline = true
         objectImageView.setOnClickListener {
             Timber.i("navigate to ObjectViewFragment")
-            val action = ObjectViewFragmentDirections
-                .actionObjectViewFragmentToObjectDetailFragment(object2D)
-            findNavController().navigate(action)
+            when (mode) {
+                Mode.OBJECT_2D -> {
+                    findNavController().navigate(
+                        ObjectViewFragmentDirections
+                            .actionObjectViewFragmentToObjectDetailFragment(object2D, null)
+                    )
+                }
+                Mode.OBJECT_3D -> {
+                    checkArCompatibility(requireActivity()) { isSupport ->
+                        if (isSupport) {
+                            findNavController().navigate(ObjectViewFragmentDirections
+                                .actionObjectViewFragmentToObjectDetailFragment(null, object3D)
+                            )
+                        }  else {
+                            MaterialAlertDialogBuilder(requireContext())
+                                .setMessage("此裝置不支援AR")
+                                .setPositiveButton("OK", null)
+                                .setCancelable(false)
+                        }
+                    }
+                }
+            }
         }
+        objectBgImageView.clipToOutline = true
+        objectImageView.clipToOutline = true
 
         view.findViewById<ImageView>(R.id.view_in_ar_ImageView).setOnClickListener {
-            val destination = ObjectViewFragmentDirections
-                .actionObjectViewFragmentToObject2DCameraFragment(object2D)
-            findNavController().navigate(destination)
+            findNavController().navigate(when (mode) {
+                Mode.OBJECT_2D -> ObjectViewFragmentDirections.actionObjectViewFragmentToObject2DCameraFragment(object2D)
+                Mode.OBJECT_3D -> ObjectViewFragmentDirections.actionObjectViewFragmentToObject3DCameraFragment(object3D)
+            })
         }
 
+        timer = Timer()
         timer.schedule(object : TimerTask() {
             override fun run() {
                 requireActivity().runOnUiThread {
@@ -82,10 +115,10 @@ class ObjectViewFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-
         timer.cancel()
     }
 
+    private var isOutlineDrawn = false
     private var outlineObjectBitmap: Bitmap? = null
     private fun highlight() {
         if (isOutlineDrawn) {

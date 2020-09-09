@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.yhwang.nicole.Mode
 import com.yhwang.nicole.R
 import com.yhwang.nicole.adapter.Object2DListRecyclerViewAdapter
 import com.yhwang.nicole.adapter.Object3DListRecyclerViewAdapter
@@ -34,11 +35,7 @@ import java.io.InputStream
 @SuppressLint("SetTextI18n")
 class ObjectListFragment : Fragment() {
 
-    enum class Mode {
-        OBJECT_2D, OBJECT_3D
-    }
     private var mode = Mode.OBJECT_2D
-
     private lateinit var switchModeButton: Button
     private lateinit var object2DListRecyclerView: RecyclerView
     private lateinit var object3DListRecyclerView: RecyclerView
@@ -50,7 +47,10 @@ class ObjectListFragment : Fragment() {
 
         switchModeButton = view.findViewById<Button>(R.id.switch_mode_Button)
         switchModeButton.setOnClickListener {
-            switchMode()
+            switchMode(when (mode) {
+                Mode.OBJECT_2D -> Mode.OBJECT_3D
+                Mode.OBJECT_3D -> Mode.OBJECT_2D
+            })
         }
 
         var layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
@@ -111,6 +111,7 @@ class ObjectListFragment : Fragment() {
             requireActivity().runOnUiThread {
                 (object3DListRecyclerView.adapter as Object3DListRecyclerViewAdapter).updateList(list)
             }
+            switchMode(Mode.OBJECT_3D)
         }
 
         GlobalScope.launch {
@@ -120,18 +121,16 @@ class ObjectListFragment : Fragment() {
         GlobalScope.launch {
             viewModel.getObject3DList(requireContext().assets!!)
         }
-
-        switchMode()
     }
 
-    private fun switchMode() {
+    private fun switchMode(mode: Mode) {
         when (mode) {
             Mode.OBJECT_2D -> {
-                mode = Mode.OBJECT_3D
-                switchModeButton.text = "3D"
-                object2DListRecyclerView.visibility = View.INVISIBLE
-                object3DListRecyclerView.visibility = View.VISIBLE
-                empty_hint_TextView.visibility = if ((object3DListRecyclerView.adapter as Object3DListRecyclerViewAdapter).list.size <= 0) {
+                this.mode = Mode.OBJECT_2D
+                switchModeButton.text = "2D"
+                object2DListRecyclerView.visibility = View.VISIBLE
+                object3DListRecyclerView.visibility = View.INVISIBLE
+                empty_hint_TextView.visibility = if ((object2DListRecyclerView.adapter as Object2DListRecyclerViewAdapter).list.size <= 0) {
                     View.VISIBLE
                 } else {
                     View.INVISIBLE
@@ -139,11 +138,11 @@ class ObjectListFragment : Fragment() {
             }
 
             Mode.OBJECT_3D -> {
-                mode = Mode.OBJECT_2D
-                switchModeButton.text = "2D"
-                object2DListRecyclerView.visibility = View.VISIBLE
-                object3DListRecyclerView.visibility = View.INVISIBLE
-                empty_hint_TextView.visibility = if ((object2DListRecyclerView.adapter as Object2DListRecyclerViewAdapter).list.size <= 0) {
+                this.mode = Mode.OBJECT_3D
+                switchModeButton.text = "3D"
+                object2DListRecyclerView.visibility = View.INVISIBLE
+                object3DListRecyclerView.visibility = View.VISIBLE
+                empty_hint_TextView.visibility = if ((object3DListRecyclerView.adapter as Object3DListRecyclerViewAdapter).list.size <= 0) {
                     View.VISIBLE
                 } else {
                     View.INVISIBLE

@@ -15,6 +15,10 @@ import com.userstar.oqrticket.timber.ThreadIncludedDebugTree
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 
+enum class Mode {
+    OBJECT_2D, OBJECT_3D
+}
+
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

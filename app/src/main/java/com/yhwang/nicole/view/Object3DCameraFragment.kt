@@ -6,6 +6,8 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.view.*
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -23,6 +25,7 @@ import com.yhwang.nicole.R
 import com.yhwang.nicole.database.GoodsDatabase
 import com.yhwang.nicole.repository.Object2DCameraRepository
 import com.yhwang.nicole.repository.Object3DCameraRepository
+import com.yhwang.nicole.utility.saveBitmapToGallery
 import com.yhwang.nicole.viewModel.Object2DCameraViewModel
 import com.yhwang.nicole.viewModel.Object3DCameraViewModel
 import kotlinx.android.synthetic.main.fragment_object_3d_camera.take_Button
@@ -33,9 +36,15 @@ import java.util.*
 
 class Object3DCameraFragment : Fragment() {
 
+    enum class Mode {
+        TAKE, RESET
+    }
+
+    private lateinit var object3D: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
+            object3D = it["object3D"] as String
         }
     }
 
@@ -49,8 +58,16 @@ class Object3DCameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        take_Button.setOnClickListener {
-
+        val takeButton = view.findViewById<ImageButton>(R.id.take_Button)
+        takeButton.setOnClickListener {
+            takePhoto { result ->
+                saveBitmapToGallery(requireContext(), result) {
+                    Toast.makeText(
+                        requireContext(), "Save successfully",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
         }
     }
 
@@ -70,7 +87,7 @@ class Object3DCameraFragment : Fragment() {
 
         arFragment.setOnTapArPlaneListener { hitResult: HitResult, _: Plane?, _: MotionEvent? ->
             ModelRenderable.builder()
-                .setSource(requireContext(), R.raw.car)
+                .setSource(requireContext()) { requireContext().assets.open("object/$object3D.sfb") }
                 .build()
                 .thenAccept { renderable: ModelRenderable ->
                     // Create the Anchor.
@@ -126,13 +143,13 @@ class Object3DCameraFragment : Fragment() {
             if (copyResult == PixelCopy.SUCCESS) {
                 try {
                     Toast.makeText(
-                        requireContext(), "Save successfully",
+                        requireContext(), "Take successfully",
                         Toast.LENGTH_LONG
                     ).show()
                     callback(bitmap)
                 } catch (e: Exception) {
                     Toast.makeText(
-                        requireContext(), "Save error",
+                        requireContext(), "Take error",
                         Toast.LENGTH_LONG
                     ).show()
                     e.printStackTrace()
