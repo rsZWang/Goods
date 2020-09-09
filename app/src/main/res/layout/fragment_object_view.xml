@@ -19,8 +19,9 @@
 
         <ImageView
             android:id="@+id/back_arrow_ImageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="?attr/actionBarSize"
+            android:scaleType="center"
             android:src="@mipmap/button_navigation_back_arrow"/>
 
         <TextView

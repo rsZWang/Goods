@@ -11,12 +11,14 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.google.ar.core.Config
 import com.google.ar.core.HitResult
 import com.google.ar.core.Plane
 import com.google.ar.core.Session
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.ArSceneView
+import com.google.ar.sceneform.collision.Box
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
@@ -58,9 +60,8 @@ class Object3DCameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val takeButton = view.findViewById<ImageButton>(R.id.take_Button)
-        takeButton.setOnClickListener {
-            takePhoto { result ->
+        view.findViewById<ImageButton>(R.id.take_Button).setOnClickListener {
+            takePhoto(arFragment.arSceneView) { result ->
                 saveBitmapToGallery(requireContext(), result) {
                     Toast.makeText(
                         requireContext(), "Save successfully",
@@ -68,6 +69,10 @@ class Object3DCameraFragment : Fragment() {
                     ).show()
                 }
             }
+        }
+
+        view.findViewById<ImageButton>(R.id.back_Button).setOnClickListener {
+            findNavController().popBackStack()
         }
     }
 
@@ -89,18 +94,22 @@ class Object3DCameraFragment : Fragment() {
             ModelRenderable.builder()
                 .setSource(requireContext()) { requireContext().assets.open("object/$object3D.sfb") }
                 .build()
-                .thenAccept { renderable: ModelRenderable ->
+                .thenAccept { model: ModelRenderable ->
                     // Create the Anchor.
                     anchorNode = AnchorNode(hitResult.createAnchor())
                     anchorNode.setParent(arFragment.arSceneView.scene)
+//                    anchorNode.localScale = Vector3(1f, 1f, 1f)
 
                     // Create the transformable model and add it to the anchor.
                     val modelNode = TransformableNode(arFragment.transformationSystem)
                     modelNode.setParent(anchorNode)
-                    modelNode.scaleController.minScale = 0.01f
-//                    modelNode.scaleController.maxScale = 0.5f
-                    modelNode.localScale = Vector3(0.05f, 0.05f, 0.05f)
-                    modelNode.renderable = renderable
+                    modelNode.scaleController.minScale = 0.1f
+
+                    val size =  (model.collisionShape as Box).size
+                    val min = size.x.coerceAtMost(size.y.coerceAtMost(size.z))
+                    Timber.i("model size: x=%f, y=%f, z=%f", size.x, size.y, size.z)
+                    modelNode.scaleController.maxScale = 1/min
+                    modelNode.renderable = model
                     modelNode.select()
                 }
                 .exceptionally {
@@ -114,21 +123,7 @@ class Object3DCameraFragment : Fragment() {
         }
     }
 
-    private val viewModel: Object3DCameraViewModel by viewModels {
-        Object3DCameraViewModel.Companion.Factory(
-            Object3DCameraRepository(requireContext())
-        )
-    }
-
-    private val object2DCameraViewModel: Object2DCameraViewModel by viewModels {
-        Object2DCameraViewModel.Companion.Factory(
-            Object2DCameraRepository(requireContext(), GoodsDatabase.getInstance(requireContext())!!)
-        )
-    }
-
-    private fun takePhoto(callback: (Bitmap) -> Unit) {
-        val view: ArSceneView = arFragment.arSceneView
-
+    private fun takePhoto(view: ArSceneView, callback: (Bitmap) -> Unit) {
         // Create a bitmap the size of the scene view.
         val bitmap = Bitmap.createBitmap(
             view.width, view.height,
