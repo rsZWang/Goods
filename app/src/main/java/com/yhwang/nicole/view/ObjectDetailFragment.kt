@@ -74,19 +74,25 @@ class ObjectDetailFragment : Fragment() {
                 )
                 Mode.OBJECT_3D -> {
                     checkArCompatibility(requireActivity()) { isSupport ->
-                        if (isSupport) {
-                            findNavController().navigate(
-                                ObjectDetailFragmentDirections.actionObjectDetailFragmentToObject3DCameraFragment(
-                                    object3D
-                                )
+//                        if (isSupport) {
+//                            findNavController().navigate(
+//                                ObjectDetailFragmentDirections.actionObjectDetailFragmentToObject3DCameraFragment(
+//                                    object3D
+//                                )
+//                            )
+//                        } else {
+//                            MaterialAlertDialogBuilder(requireContext())
+//                                .setMessage("此裝置不支援AR")
+//                                .setPositiveButton("OK", null)
+//                                .setCancelable(false)
+//                                .show()
+//                        }
+
+                        findNavController().navigate(
+                            ObjectDetailFragmentDirections.actionObjectDetailFragmentToObject3DCameraFragment(
+                                object3D
                             )
-                        } else {
-                            MaterialAlertDialogBuilder(requireContext())
-                                .setMessage("此裝置不支援AR")
-                                .setPositiveButton("OK", null)
-                                .setCancelable(false)
-                                .show()
-                        }
+                        )
                     }
                 }
             }
@@ -104,11 +110,6 @@ class ObjectDetailFragment : Fragment() {
                 checkArCompatibility(requireActivity()) { isSupport ->
                     if (isSupport) {
                         object3DSceneView = view.findViewById(R.id.object_3d_SceneView)
-                        object3DSceneView.renderer!!.setClearColor(
-                            com.google.ar.sceneform.rendering.Color(
-                                WHITE
-                            )
-                        )
                         object3DSceneView.visibility = View.VISIBLE
                         object3DSceneView.resume()
                         ModelRenderable.builder()

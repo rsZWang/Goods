@@ -4,36 +4,24 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Looper
 import android.view.*
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.google.ar.core.Config
-import com.google.ar.core.HitResult
-import com.google.ar.core.Plane
-import com.google.ar.core.Session
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.ar.core.*
+import com.google.ar.core.exceptions.*
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.ArSceneView
 import com.google.ar.sceneform.collision.Box
-import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
 import com.yhwang.nicole.R
-import com.yhwang.nicole.database.GoodsDatabase
-import com.yhwang.nicole.repository.Object2DCameraRepository
-import com.yhwang.nicole.repository.Object3DCameraRepository
 import com.yhwang.nicole.utility.saveBitmapToGallery
-import com.yhwang.nicole.viewModel.Object2DCameraViewModel
-import com.yhwang.nicole.viewModel.Object3DCameraViewModel
-import kotlinx.android.synthetic.main.fragment_object_3d_camera.take_Button
 import timber.log.Timber
 import java.lang.Exception
-import java.util.*
 
 
 class Object3DCameraFragment : Fragment() {
@@ -54,17 +42,13 @@ class Object3DCameraFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_object_3d_camera, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val view = inflater.inflate(R.layout.fragment_object_3d_camera, container, false)
 
         view.findViewById<ImageButton>(R.id.take_Button).setOnClickListener {
             takePhoto(arFragment.arSceneView) { result ->
                 saveBitmapToGallery(requireContext(), result) {
                     Toast.makeText(
-                        requireContext(), "Save successfully",
+                        requireContext(), "Save to gallery successfully",
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -74,13 +58,42 @@ class Object3DCameraFragment : Fragment() {
         view.findViewById<ImageButton>(R.id.back_Button).setOnClickListener {
             findNavController().popBackStack()
         }
+
+        return view
+    }
+
+    private var isNotRequested = true
+    override fun onResume() {
+        super.onResume()
+
+        try {
+            if (ArCoreApk.getInstance().requestInstall(requireActivity(), isNotRequested) == ArCoreApk.InstallStatus.INSTALL_REQUESTED) {
+                Timber.i("ArCoreApk.getInstance().requestInstall() INSTALL_REQUESTED")
+                isNotRequested = false
+            } else {
+                startArSession()
+            }
+        } catch (e: Exception) {
+            val message = when (e) {
+                is UnavailableArcoreNotInstalledException -> "UnavailableArcoreNotInstalledException, please install ARCore."
+                is UnavailableUserDeclinedInstallationException -> "UnavailableUserDeclinedInstallationException, please install ARCore."
+                is UnavailableApkTooOldException -> "UnavailableApkTooOldException, please update ARCore."
+                is UnavailableSdkTooOldException -> "UnavailableSdkTooOldException, please update this app."
+                is UnavailableDeviceNotCompatibleException -> "UnavailableDeviceNotCompatibleException, this device does not support AR."
+                else -> "Unknown exception, failed to start AR session."
+            }
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("開啟AR session失敗")
+                .setMessage(message)
+                .setPositiveButton("OK") { _, _ -> findNavController().popBackStack() }
+                .setCancelable(false)
+                .show()
+        }
     }
 
     private lateinit var anchorNode: AnchorNode
     private lateinit var arFragment: ArFragment
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
+    private fun startArSession() {
         arFragment = childFragmentManager.findFragmentById(R.id.ar_3d_model_Fragment) as ArFragment
         val session = Session(requireContext())
         val config = Config(session)

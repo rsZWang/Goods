@@ -10,6 +10,7 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.ar.core.ArCoreApk
 import com.yhwang.nicole.Mode
 import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Object2D
@@ -88,6 +89,7 @@ class ObjectViewFragment : Fragment() {
                                 .setMessage("此裝置不支援AR")
                                 .setPositiveButton("OK", null)
                                 .setCancelable(false)
+                                .show()
                         }
                     }
                 }
@@ -97,9 +99,31 @@ class ObjectViewFragment : Fragment() {
         objectImageView.clipToOutline = true
 
         view.findViewById<ImageView>(R.id.view_in_ar_ImageView).setOnClickListener {
-            findNavController().navigate(when (mode) {
-                Mode.OBJECT_2D -> ObjectViewFragmentDirections.actionObjectViewFragmentToObject2DCameraFragment(object2D)
-                Mode.OBJECT_3D -> ObjectViewFragmentDirections.actionObjectViewFragmentToObject3DCameraFragment(object3D)
+            (when (mode) {
+                Mode.OBJECT_2D -> {
+                    findNavController().navigate(
+                        ObjectViewFragmentDirections.actionObjectViewFragmentToObject2DCameraFragment(object2D)
+                    )
+                }
+                Mode.OBJECT_3D -> {
+//                    checkArCompatibility(requireActivity()) { isSupport ->
+//                        if (isSupport) {
+//                            findNavController().navigate(
+//                                ObjectViewFragmentDirections.actionObjectViewFragmentToObject3DCameraFragment(object3D)
+//                            )
+//                        }  else {
+//                            MaterialAlertDialogBuilder(requireContext())
+//                                .setMessage("此裝置不支援AR")
+//                                .setPositiveButton("OK", null)
+//                                .setCancelable(false)
+//                                .show()
+//                        }
+//                    }
+
+                    findNavController().navigate(
+                        ObjectViewFragmentDirections.actionObjectViewFragmentToObject3DCameraFragment(object3D)
+                    )
+                }
             })
         }
 

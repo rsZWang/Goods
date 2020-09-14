@@ -25,6 +25,8 @@ class MainActivity : AppCompatActivity() {
             Timber.plant(ReleaseTree())
         }
 
+        // cool890104@gmail.com ESJkDD4fTYSiGpLZAqQ6rd2T
+
         RemoveBg.init("ESJkDD4fTYSiGpLZAqQ6rd2T")
     }
 }

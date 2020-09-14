@@ -65,7 +65,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="invisible"
-            android:foreground="@drawable/border_object"
             android:background="@android:color/white"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

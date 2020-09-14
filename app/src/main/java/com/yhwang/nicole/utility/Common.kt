@@ -13,7 +13,17 @@ fun checkArCompatibility(activity: Activity, callback: (Boolean) -> Unit) {
         Handler(Looper.getMainLooper()).postDelayed({
             checkArCompatibility(activity, callback)
         }, 200)
+    } else if (availability.isSupported) {
+        when (ArCoreApk.getInstance().requestInstall(activity, true)) {
+            ArCoreApk.InstallStatus.INSTALLED -> {
+                callback(availability.isSupported)
+            }
+
+            ArCoreApk.InstallStatus.INSTALL_REQUESTED -> {
+                checkArCompatibility(activity, callback)
+            }
+        }
     } else {
-        callback(availability.isSupported)
+        callback(availability.isUnsupported)
     }
 }
