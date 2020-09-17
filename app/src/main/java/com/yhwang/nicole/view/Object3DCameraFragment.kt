@@ -1,5 +1,7 @@
 package com.yhwang.nicole.view
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Handler
@@ -7,6 +9,8 @@ import android.os.HandlerThread
 import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -19,6 +23,7 @@ import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
 import com.yhwang.nicole.R
+import com.yhwang.nicole.utility.checkPermission
 import com.yhwang.nicole.utility.saveBitmapToGallery
 import timber.log.Timber
 import java.lang.Exception
@@ -62,33 +67,9 @@ class Object3DCameraFragment : Fragment() {
         return view
     }
 
-    private var isNotRequested = true
-    override fun onResume() {
-        super.onResume()
-
-        try {
-            if (ArCoreApk.getInstance().requestInstall(requireActivity(), isNotRequested) == ArCoreApk.InstallStatus.INSTALL_REQUESTED) {
-                Timber.i("ArCoreApk.getInstance().requestInstall() INSTALL_REQUESTED")
-                isNotRequested = false
-            } else {
-                startArSession()
-            }
-        } catch (e: Exception) {
-            val message = when (e) {
-                is UnavailableArcoreNotInstalledException -> "UnavailableArcoreNotInstalledException, please install ARCore."
-                is UnavailableUserDeclinedInstallationException -> "UnavailableUserDeclinedInstallationException, please install ARCore."
-                is UnavailableApkTooOldException -> "UnavailableApkTooOldException, please update ARCore."
-                is UnavailableSdkTooOldException -> "UnavailableSdkTooOldException, please update this app."
-                is UnavailableDeviceNotCompatibleException -> "UnavailableDeviceNotCompatibleException, this device does not support AR."
-                else -> "Unknown exception, failed to start AR session."
-            }
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle("開啟AR session失敗")
-                .setMessage(message)
-                .setPositiveButton("OK") { _, _ -> findNavController().popBackStack() }
-                .setCancelable(false)
-                .show()
-        }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        startArSession()
     }
 
     private lateinit var anchorNode: AnchorNode

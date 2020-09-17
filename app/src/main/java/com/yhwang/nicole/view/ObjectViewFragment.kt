@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -17,6 +18,7 @@ import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.utility.*
 import timber.log.Timber
 import java.util.*
+import java.util.jar.Manifest
 
 
 @SuppressLint("ClickableViewAccessibility")
@@ -99,32 +101,24 @@ class ObjectViewFragment : Fragment() {
         objectImageView.clipToOutline = true
 
         view.findViewById<ImageView>(R.id.view_in_ar_ImageView).setOnClickListener {
-            (when (mode) {
-                Mode.OBJECT_2D -> {
-                    findNavController().navigate(
-                        ObjectViewFragmentDirections.actionObjectViewFragmentToObject2DCameraFragment(object2D)
-                    )
+            checkPermission(requireActivity() as AppCompatActivity, android.Manifest.permission.CAMERA) {
+                if (it) {
+                    when (mode) {
+                        Mode.OBJECT_2D -> {
+                            findNavController().navigate(
+                                ObjectViewFragmentDirections.actionObjectViewFragmentToObject2DCameraFragment(object2D)
+                            )
+                        }
+                        Mode.OBJECT_3D -> {
+                            checkArCoreCompatibility(requireActivity()) {
+                                findNavController().navigate(
+                                    ObjectViewFragmentDirections.actionObjectViewFragmentToObject3DCameraFragment(object3D)
+                                )
+                            }
+                        }
+                    }
                 }
-                Mode.OBJECT_3D -> {
-//                    checkArCompatibility(requireActivity()) { isSupport ->
-//                        if (isSupport) {
-//                            findNavController().navigate(
-//                                ObjectViewFragmentDirections.actionObjectViewFragmentToObject3DCameraFragment(object3D)
-//                            )
-//                        }  else {
-//                            MaterialAlertDialogBuilder(requireContext())
-//                                .setMessage("此裝置不支援AR")
-//                                .setPositiveButton("OK", null)
-//                                .setCancelable(false)
-//                                .show()
-//                        }
-//                    }
-
-                    findNavController().navigate(
-                        ObjectViewFragmentDirections.actionObjectViewFragmentToObject3DCameraFragment(object3D)
-                    )
-                }
-            })
+            }
         }
 
         timer = Timer()

@@ -5,6 +5,7 @@ import android.graphics.Color.WHITE
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -19,10 +20,7 @@ import com.yhwang.nicole.Mode
 import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.nodes.DragTransformableNode
-import com.yhwang.nicole.utility.assetsImageToBitmap
-import com.yhwang.nicole.utility.checkArCompatibility
-import com.yhwang.nicole.utility.fileToBitmap
-import com.yhwang.nicole.utility.trimTransparentPart
+import com.yhwang.nicole.utility.*
 import timber.log.Timber
 
 
@@ -65,34 +63,21 @@ class ObjectDetailFragment : Fragment() {
 
         view.findViewById<ConstraintLayout>(R.id.view_in_ar_ConstraintLayout).setOnClickListener {
             Timber.i("View in AR")
-
-            when (mode) {
-                Mode.OBJECT_2D -> findNavController().navigate(
-                    ObjectDetailFragmentDirections.actionObjectDetailFragmentToObject2DCameraFragment(
-                        object2D
-                    )
-                )
-                Mode.OBJECT_3D -> {
-                    checkArCompatibility(requireActivity()) { isSupport ->
-//                        if (isSupport) {
-//                            findNavController().navigate(
-//                                ObjectDetailFragmentDirections.actionObjectDetailFragmentToObject3DCameraFragment(
-//                                    object3D
-//                                )
-//                            )
-//                        } else {
-//                            MaterialAlertDialogBuilder(requireContext())
-//                                .setMessage("此裝置不支援AR")
-//                                .setPositiveButton("OK", null)
-//                                .setCancelable(false)
-//                                .show()
-//                        }
-
-                        findNavController().navigate(
-                            ObjectDetailFragmentDirections.actionObjectDetailFragmentToObject3DCameraFragment(
-                                object3D
-                            )
+            checkPermission(requireActivity() as AppCompatActivity, android.Manifest.permission.CAMERA) {
+                when (mode) {
+                    Mode.OBJECT_2D -> findNavController().navigate(
+                        ObjectDetailFragmentDirections.actionObjectDetailFragmentToObject2DCameraFragment(
+                            object2D
                         )
+                    )
+                    Mode.OBJECT_3D -> {
+                        checkArCoreCompatibility(requireActivity()) {
+                            findNavController().navigate(
+                                ObjectDetailFragmentDirections.actionObjectDetailFragmentToObject3DCameraFragment(
+                                    object3D
+                                )
+                            )
+                        }
                     }
                 }
             }
