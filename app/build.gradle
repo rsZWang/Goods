@@ -6,6 +6,20 @@ apply plugin: "androidx.navigation.safeargs.kotlin"
 apply plugin: 'com.google.ar.sceneform.plugin'
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('/Users/nihontabako/Desktop/Projects/Nicole/keyStore')
+            storePassword 'nicole1111'
+            keyAlias 'key0'
+            keyPassword 'nicole1111'
+        }
+        release {
+            storeFile file('/Users/nihontabako/Desktop/Projects/Nicole/keyStore')
+            storePassword 'nicole1111'
+            keyAlias 'key0'
+            keyPassword 'nicole1111'
+        }
+    }
     compileSdkVersion 30
     buildToolsVersion "30.0.1"
 
@@ -14,7 +28,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName "1.9.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {
@@ -25,6 +39,7 @@ android {
                         "room.expandProjection":"true"]
             }
         }
+        signingConfig signingConfigs.release
     }
 
     buildTypes {
@@ -90,15 +105,11 @@ dependencies {
     implementation 'com.github.lau1944:Zoom-Drag-Rotate-ImageView:1.0.0' // Zoom, drag, rotate Image View
     implementation 'com.theapache64.removebg:removebg:1.0.0' // Remove bg
 
-    // Gson
-    implementation 'com.google.code.gson:gson:2.8.6'
-
-    // Dagger
-    implementation 'com.google.dagger:dagger:2.27'
+    implementation 'com.google.code.gson:gson:2.8.6'  // Gson
+    implementation 'com.squareup.okhttp3:okhttp:4.7.2'  // HTTP library
+    implementation 'com.google.dagger:dagger:2.27'  // Dagger
     kapt 'com.google.dagger:dagger-compiler:2.21'
-
-    // AndroidUtilsLibrary
-    implementation 'com.gitlab.developerdeveloperdeveloper:androidutilslibrary:1.0.0'
+    implementation 'com.gitlab.developerdeveloperdeveloper:androidutilslibrary:1.0.0'  // AndroidUtilsLibrary
 
     // Provides ARCore Session and related resources.
     implementation 'com.google.ar:core:1.19.0'
