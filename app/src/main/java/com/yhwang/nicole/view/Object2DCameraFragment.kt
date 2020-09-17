@@ -27,6 +27,7 @@ import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.repository.Object2DCameraRepository
 import com.yhwang.nicole.utility.*
 import com.yhwang.nicole.viewModel.Object2DCameraViewModel
+import com.yhwang.nicole.viewModel.Object2DCameraViewModelFactory
 import kotlinx.android.synthetic.main.fragment_object_2d_camera.*
 import timber.log.Timber
 
@@ -52,8 +53,7 @@ class Object2DCameraFragment : Fragment() {
 
     private lateinit var cameraView: CameraView
     private val viewModel: Object2DCameraViewModel by viewModels {
-        Object2DCameraViewModel.Companion.Factory(
-            Object2DCameraRepository(requireContext(), GoodsDatabase.getInstance(requireContext())!!))
+        Object2DCameraViewModelFactory(Object2DCameraRepository(requireContext(), GoodsDatabase.getInstance(requireContext())!!))
     }
 
     private lateinit var mode: Mode

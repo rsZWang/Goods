@@ -45,7 +45,7 @@ class ObjectListFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_object_list, container, false)
 
-        switchModeButton = view.findViewById<Button>(R.id.switch_mode_Button)
+        switchModeButton = view.findViewById(R.id.switch_mode_Button)
         switchModeButton.setOnClickListener {
             switchMode(when (mode) {
                 Mode.OBJECT_2D -> Mode.OBJECT_3D
@@ -70,9 +70,8 @@ class ObjectListFragment : Fragment() {
         view.findViewById<ImageView>(R.id.to_camera_fragment_Button).setOnClickListener {
             when (mode) {
                 Mode.OBJECT_2D -> {
-                    val destination = ObjectListFragmentDirections
-                        .actionObjectListFragmentToObject2DCameraFragment()
-                    findNavController().navigate(destination)
+                    findNavController().navigate(ObjectListFragmentDirections
+                        .actionObjectListFragmentToObject2DCameraFragment())
                 }
 
                 Mode.OBJECT_3D -> {

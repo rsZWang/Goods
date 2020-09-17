@@ -21,18 +21,15 @@ class Object2DCameraViewModel(
             y,
             background,
             callback)
+}
 
-    companion object {
-        class Factory(
-            private val object2DCameraRepository: Object2DCameraRepository
-        ) : ViewModelProvider.Factory {
-
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                return Object2DCameraViewModel(
-                    object2DCameraRepository
-                ) as T
-            }
-        }
+class Object2DCameraViewModelFactory(
+    private val object2DCameraRepository: Object2DCameraRepository
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return Object2DCameraViewModel(
+            object2DCameraRepository
+        ) as T
     }
 }

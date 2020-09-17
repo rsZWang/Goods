@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/objectListFragment">
-
     <fragment
         android:id="@+id/objectListFragment"
         android:name="com.yhwang.nicole.view.ObjectListFragment"
@@ -12,8 +11,13 @@
         tools:layout="@layout/fragment_object_list" >
 
         <action
+            android:id="@+id/action_objectListFragment_to_object3DCameraFragment"
+            app:destination="@id/object3DCameraFragment" />
+
+        <action
             android:id="@+id/action_objectListFragment_to_object2DCameraFragment"
             app:destination="@id/object2DCameraFragment" />
+
         <action
             android:id="@+id/action_objectListFragment_to_ObjectViewFragment"
             app:destination="@id/objectViewFragment">
@@ -30,9 +34,6 @@
                 app:nullable="true"
                 android:defaultValue="@null" />
         </action>
-        <action
-            android:id="@+id/action_objectListFragment_to_object3DCameraFragment"
-            app:destination="@id/object3DCameraFragment" />
     </fragment>
     <fragment
         android:id="@+id/object2DCameraFragment"
