@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.RelativeLayout
 import android.widget.Toast
@@ -35,17 +36,23 @@ import timber.log.Timber
 @SuppressLint("ClickableViewAccessibility")
 class Object2DCameraFragment : Fragment() {
 
+    private lateinit var takeButton: ImageButton
+    private lateinit var shareButton: ImageButton
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_object_2d_camera, container, false)
 
+        takeButton = view.findViewById(R.id.take_Button)
         view.findViewById<ImageButton>(R.id.back_Button).setOnClickListener {
             findNavController().popBackStack()
         }
+        shareButton = view.findViewById(R.id.share_button)
+        shareButton.visibility = View.GONE
 
         cameraView = view.findViewById(R.id.camera_View)
+        cameraView.setLifecycleOwner(viewLifecycleOwner)
         objectContainerRelativeLayout = view.findViewById(R.id.object_container_RelativeLayout)
 
         return view
@@ -66,27 +73,27 @@ class Object2DCameraFragment : Fragment() {
             when (mode) {
                 Mode.REMOVE_BG -> cameraView.takePictureSnapshot()
                 Mode.SCREEN_SHOT -> cameraView.takePictureSnapshot()
-                Mode.SHARE -> {
-                    objectContainerRelativeLayout.background = null
-                    take_Button.setImageResource(R.mipmap.button_camera)
-                    mode = Mode.SCREEN_SHOT
-                }
+//                Mode.SHARE -> {
+//                    objectContainerRelativeLayout.background = null
+//                    take_Button.setImageResource(R.mipmap.button_camera)
+//                    mode = Mode.SCREEN_SHOT
+//                }
             }
         }
 
         share_button.setOnClickListener {
             when (mode) {
-                Mode.REMOVE_BG -> Toast.makeText(
-                    requireContext(),
-                    "請先去背",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                Mode.SCREEN_SHOT -> Toast.makeText(
-                    requireContext(),
-                    "請先拍照",
-                    Toast.LENGTH_LONG
-                ).show()
+//                Mode.REMOVE_BG -> Toast.makeText(
+//                    requireContext(),
+//                    "請先去背",
+//                    Toast.LENGTH_LONG
+//                ).show()
+//
+//                Mode.SCREEN_SHOT -> Toast.makeText(
+//                    requireContext(),
+//                    "請先拍照",
+//                    Toast.LENGTH_LONG
+//                ).show()
 
                 Mode.SHARE -> viewModel.saveScreenToGallery(layoutToBitmap(objectContainerRelativeLayout)) {
                     Toast.makeText(
@@ -98,7 +105,6 @@ class Object2DCameraFragment : Fragment() {
             }
         }
 
-        cameraView.setLifecycleOwner(viewLifecycleOwner)
         cameraView.addCameraListener(object : CameraListener() {
             override fun onPictureTaken(result: PictureResult) {
                 super.onPictureTaken(result)
@@ -106,13 +112,13 @@ class Object2DCameraFragment : Fragment() {
                     if (bitmap != null) {
                         when (mode) {
                             Mode.REMOVE_BG -> {
-                                Timber.d("remove bg mode")
+                                Timber.i("remove bg mode")
                                 Toast.makeText(requireContext(), "去背中...", Toast.LENGTH_LONG).show()
                                 removeBitmapBg(bitmap)
                             }
                             Mode.SCREEN_SHOT -> {
                                 Thread {
-                                    Timber.d("screen shot mode")
+                                    Timber.i("screen shot mode")
                                     viewModel.saveObjectAndBg(
                                         layoutToBitmap(objectContainerRelativeLayout),
                                         rotateZoomImageView.x,
@@ -125,7 +131,11 @@ class Object2DCameraFragment : Fragment() {
                                             mode = Mode.SHARE
                                         }
                                     }
-                                    requireActivity().runOnUiThread { objectContainerRelativeLayout.background = BitmapDrawable(resources, bitmap) }
+                                    requireActivity().runOnUiThread {
+                                        objectContainerRelativeLayout.background = BitmapDrawable(resources, bitmap)
+                                        takeButton.visibility = View.GONE
+                                        shareButton.visibility = View.VISIBLE
+                                    }
                                 }.start()
                             }
                             else -> Timber.e("mode error")

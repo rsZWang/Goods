@@ -15,10 +15,9 @@ abstract class GoodsDatabase : RoomDatabase() {
         private var instance: GoodsDatabase? = null
         fun getInstance(context: Context) : GoodsDatabase? {
             return instance ?: synchronized(this) {
-                instance
-                    ?: buildDatabase(
-                        context
-                    ).also { instance = it }
+                instance ?: buildDatabase(context).also {
+                    instance = it
+                }
             }
         }
 

@@ -7,7 +7,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.view.*
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -25,15 +28,14 @@ import com.google.ar.sceneform.ux.TransformableNode
 import com.yhwang.nicole.R
 import com.yhwang.nicole.utility.checkPermission
 import com.yhwang.nicole.utility.saveBitmapToGallery
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.lang.Exception
 
 
 class Object3DCameraFragment : Fragment() {
-
-    enum class Mode {
-        TAKE, RESET
-    }
 
     private lateinit var object3D: String
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,20 +45,52 @@ class Object3DCameraFragment : Fragment() {
         }
     }
 
+    private lateinit var tookBitmap: Bitmap
+    private lateinit var tookPicture: ImageView
+    private lateinit var takeButton: ImageButton
+    private lateinit var shareButton: ImageButton
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_object_3d_camera, container, false)
 
-        view.findViewById<ImageButton>(R.id.take_Button).setOnClickListener {
-            takePhoto(arFragment.arSceneView) { result ->
-                saveBitmapToGallery(requireContext(), result) {
-                    Toast.makeText(
-                        requireContext(), "Save to gallery successfully",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+        tookPicture = view.findViewById(R.id.took_picture_imageView)
+        tookPicture.visibility = View.GONE
+
+        takeButton = view.findViewById(R.id.take_Button)
+        takeButton.setOnClickListener {
+            tookPicture.visibility = View.VISIBLE
+            tookPicture.startAnimation(AlphaAnimation(1f, 0f).apply {
+                duration = 1000
+                setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(p0: Animation?) { }
+                    override fun onAnimationEnd(p0: Animation?) {
+                        takePhoto(arFragment.arSceneView) { result ->
+                            tookBitmap = result
+                            GlobalScope.launch(Dispatchers.Main) {
+                                arFragment.arSceneView.pause()
+                                arFragment.arSceneView.visibility = View.GONE
+                                takeButton.visibility = View.GONE
+
+                                tookPicture.setImageBitmap(result)
+                                shareButton.visibility = View.VISIBLE
+                            }
+                        }
+                    }
+                    override fun onAnimationRepeat(p0: Animation?) { }
+                })
+            })
+        }
+
+        shareButton = view.findViewById(R.id.share_button)
+        shareButton.visibility = View.GONE
+        shareButton.setOnClickListener {
+            saveBitmapToGallery(requireContext(), tookBitmap) {
+                Toast.makeText(
+                    requireContext(), "Save to gallery successfully",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
@@ -105,8 +139,7 @@ class Object3DCameraFragment : Fragment() {
                     modelNode.scaleController.maxScale = 1/min
                     modelNode.renderable = model
                     modelNode.select()
-                }
-                .exceptionally {
+                }.exceptionally {
                     Toast.makeText(
                         requireContext(),
                         "Unable to load andy renderable",
