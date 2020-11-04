@@ -3,6 +3,7 @@ package com.yhwang.nicole.view
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -25,14 +26,17 @@ import com.google.ar.sceneform.collision.Box
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
+import com.yhwang.nicole.ProgressBarDialogFragment
 import com.yhwang.nicole.R
 import com.yhwang.nicole.utility.checkPermission
 import com.yhwang.nicole.utility.saveBitmapToGallery
+import com.yhwang.nicole.utility.share
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.lang.Exception
+import kotlin.concurrent.thread
 
 
 class Object3DCameraFragment : Fragment() {
@@ -45,8 +49,10 @@ class Object3DCameraFragment : Fragment() {
         }
     }
 
+    private var imageUri: Uri? = null
     private lateinit var tookBitmap: Bitmap
     private lateinit var tookPicture: ImageView
+    private lateinit var flashAnimationView: View
     private lateinit var takeButton: ImageButton
     private lateinit var shareButton: ImageButton
     override fun onCreateView(
@@ -56,27 +62,32 @@ class Object3DCameraFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_object_3d_camera, container, false)
 
         tookPicture = view.findViewById(R.id.took_picture_imageView)
-        tookPicture.visibility = View.GONE
+        flashAnimationView = view.findViewById(R.id.flash_animation_view)
 
         takeButton = view.findViewById(R.id.take_Button)
         takeButton.setOnClickListener {
-            tookPicture.visibility = View.VISIBLE
-            tookPicture.startAnimation(AlphaAnimation(1f, 0f).apply {
-                duration = 1000
+            thread {
+                takePhoto(arFragment.arSceneView) { result ->
+                    tookBitmap = result
+                    GlobalScope.launch(Dispatchers.Main) {
+                        tookPicture.setImageBitmap(result)
+                        tookPicture.visibility = View.VISIBLE
+
+                        takeButton.visibility = View.GONE
+                        shareButton.visibility = View.VISIBLE
+
+                        arFragment.arSceneView.pause()
+                        arFragment.arSceneView.visibility = View.GONE
+                    }
+                }
+            }
+            flashAnimationView.visibility = View.VISIBLE
+            flashAnimationView.startAnimation(AlphaAnimation(1f, 0f).apply {
+                duration = 900
                 setAnimationListener(object : Animation.AnimationListener {
                     override fun onAnimationStart(p0: Animation?) { }
                     override fun onAnimationEnd(p0: Animation?) {
-                        takePhoto(arFragment.arSceneView) { result ->
-                            tookBitmap = result
-                            GlobalScope.launch(Dispatchers.Main) {
-                                arFragment.arSceneView.pause()
-                                arFragment.arSceneView.visibility = View.GONE
-                                takeButton.visibility = View.GONE
-
-                                tookPicture.setImageBitmap(result)
-                                shareButton.visibility = View.VISIBLE
-                            }
-                        }
+                        flashAnimationView.visibility = View.GONE
                     }
                     override fun onAnimationRepeat(p0: Animation?) { }
                 })
@@ -86,11 +97,22 @@ class Object3DCameraFragment : Fragment() {
         shareButton = view.findViewById(R.id.share_button)
         shareButton.visibility = View.GONE
         shareButton.setOnClickListener {
-            saveBitmapToGallery(requireContext(), tookBitmap) {
-                Toast.makeText(
-                    requireContext(), "Save to gallery successfully",
-                    Toast.LENGTH_LONG
-                ).show()
+            if (imageUri == null) {
+                val progressBarDialogFragment = ProgressBarDialogFragment()
+                progressBarDialogFragment.show(parentFragmentManager, null)
+                Toast.makeText(requireContext(), "儲存中...", Toast.LENGTH_SHORT).show()
+                thread {
+                    saveBitmapToGallery(requireContext(), tookBitmap) { uri ->
+                        GlobalScope.launch(Dispatchers.Main) {
+                            progressBarDialogFragment.dismiss()
+                            Toast.makeText(requireContext(), "成功儲存到相簿", Toast.LENGTH_LONG).show()
+                        }
+                        imageUri = uri
+                        share(requireActivity(), imageUri!!)
+                    }
+                }
+            } else {
+                share(requireActivity(), imageUri!!)
             }
         }
 

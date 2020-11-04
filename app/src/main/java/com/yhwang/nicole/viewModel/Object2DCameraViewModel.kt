@@ -1,6 +1,7 @@
 package com.yhwang.nicole.viewModel
 
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.yhwang.nicole.repository.Object2DCameraRepository
@@ -11,7 +12,7 @@ class Object2DCameraViewModel(
     fun removeBg(bitmap: Bitmap, callback: (bitmap: Bitmap) -> Unit) =
         cameraRepository.removeBg(bitmap, callback)
 
-    fun saveScreenToGallery(bitmap: Bitmap, callback: ()->Unit) =
+    fun saveScreenToGallery(bitmap: Bitmap, callback: (Uri)->Unit) =
         cameraRepository.saveScreenToGallery(bitmap, callback)
 
     fun saveObjectAndBg(objectBitmap: Bitmap, x: Float, y: Float, background: Bitmap, callback: () -> Unit) =

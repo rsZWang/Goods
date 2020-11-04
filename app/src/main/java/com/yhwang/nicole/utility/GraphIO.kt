@@ -1,9 +1,11 @@
 package com.yhwang.nicole.utility
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -21,7 +23,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
 
-fun saveBitmapToGallery(context: Context, bitmap: Bitmap, callback: ()->Unit) {
+fun saveBitmapToGallery(context: Context, bitmap: Bitmap, callback: (Uri)->Unit) {
     if (Build.VERSION.SDK_INT >= 29) {
         val imageContentValues = getImageContentValues(null)
         val uri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageContentValues)
@@ -29,6 +31,7 @@ fun saveBitmapToGallery(context: Context, bitmap: Bitmap, callback: ()->Unit) {
             writeBitmapToStream(bitmap, context.contentResolver.openOutputStream(uri))
             imageContentValues.put(MediaStore.Images.Media.IS_PENDING, false)
             context.contentResolver.update(uri, imageContentValues, null, null)
+            callback(uri)
         }
     } else {
         val directory = File(Environment.getExternalStorageDirectory().toString() + File.separator + "Goods")
@@ -37,8 +40,8 @@ fun saveBitmapToGallery(context: Context, bitmap: Bitmap, callback: ()->Unit) {
         val file = File(directory, fileName)
         writeBitmapToStream(bitmap, FileOutputStream(file))
         context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, getImageContentValues(file.absolutePath))
+        callback(Uri.parse(file.absolutePath))
     }
-    callback()
 }
 
 private fun getImageContentValues(filePath: String?) : ContentValues {
@@ -130,6 +133,15 @@ fun removeBg(context: Context, origin: Bitmap, callback: (bitmap: Bitmap) -> Uni
             callback(bitmap)
         }
     })
+}
+
+fun share(activity: Activity, uri: Uri) {
+    val shareIntent: Intent = Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_STREAM, uri)
+        type = "image/jpeg"
+    }
+    activity.startActivity(Intent.createChooser(shareIntent, "Share Image"))
 }
 
 //fun loadImageFileByPicasso(context: Context, fileName: String, target: ImageView) {

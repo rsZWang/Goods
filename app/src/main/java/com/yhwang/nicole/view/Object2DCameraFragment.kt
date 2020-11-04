@@ -5,12 +5,15 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.os.*
+import android.net.Uri
+import android.os.Bundle
+import android.os.StrictMode
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import android.widget.Button
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 import android.widget.ImageButton
 import android.widget.RelativeLayout
 import android.widget.Toast
@@ -22,20 +25,34 @@ import com.easystudio.rotateimageview.RotateZoomImageView
 import com.otaliastudios.cameraview.CameraListener
 import com.otaliastudios.cameraview.CameraView
 import com.otaliastudios.cameraview.PictureResult
+import com.yhwang.nicole.ProgressBarDialogFragment
 import com.yhwang.nicole.R
 import com.yhwang.nicole.database.GoodsDatabase
 import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.repository.Object2DCameraRepository
-import com.yhwang.nicole.utility.*
+import com.yhwang.nicole.utility.fileToBitmap
+import com.yhwang.nicole.utility.layoutToBitmap
+import com.yhwang.nicole.utility.share
+import com.yhwang.nicole.utility.trimTransparentPart
 import com.yhwang.nicole.viewModel.Object2DCameraViewModel
 import com.yhwang.nicole.viewModel.Object2DCameraViewModelFactory
 import kotlinx.android.synthetic.main.fragment_object_2d_camera.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.concurrent.thread
 
 
 @SuppressLint("ClickableViewAccessibility")
 class Object2DCameraFragment : Fragment() {
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
+    }
+
+    private lateinit var flashAnimationView: View
     private lateinit var takeButton: ImageButton
     private lateinit var shareButton: ImageButton
     override fun onCreateView(
@@ -54,6 +71,7 @@ class Object2DCameraFragment : Fragment() {
         cameraView = view.findViewById(R.id.camera_View)
         cameraView.setLifecycleOwner(viewLifecycleOwner)
         objectContainerRelativeLayout = view.findViewById(R.id.object_container_RelativeLayout)
+        flashAnimationView = view.findViewById(R.id.flash_animation_view)
 
         return view
     }
@@ -63,6 +81,8 @@ class Object2DCameraFragment : Fragment() {
         Object2DCameraViewModelFactory(Object2DCameraRepository(requireContext(), GoodsDatabase.getInstance(requireContext())!!))
     }
 
+    private val progressBarDialogFragment = ProgressBarDialogFragment()
+    private var imageUri: Uri? = null
     private lateinit var mode: Mode
     private lateinit var rotateZoomImageView: RotateZoomImageView
     private lateinit var objectContainerRelativeLayout: RelativeLayout
@@ -70,38 +90,38 @@ class Object2DCameraFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         take_Button.setOnClickListener {
-            when (mode) {
-                Mode.REMOVE_BG -> cameraView.takePictureSnapshot()
-                Mode.SCREEN_SHOT -> cameraView.takePictureSnapshot()
-//                Mode.SHARE -> {
-//                    objectContainerRelativeLayout.background = null
-//                    take_Button.setImageResource(R.mipmap.button_camera)
-//                    mode = Mode.SCREEN_SHOT
-//                }
+            GlobalScope.launch(Dispatchers.Main) {
+                flashAnimationView.visibility = View.VISIBLE
+                flashAnimationView.startAnimation(AlphaAnimation(1f, 0f).apply {
+                    duration = 1000
+                    setAnimationListener(object : Animation.AnimationListener {
+                        override fun onAnimationStart(p0: Animation?) { }
+                        override fun onAnimationEnd(p0: Animation?) {
+                            flashAnimationView.visibility = View.GONE
+                        }
+                        override fun onAnimationRepeat(p0: Animation?) { }
+                    })
+                })
             }
+            cameraView.takePictureSnapshot()
         }
 
         share_button.setOnClickListener {
-            when (mode) {
-//                Mode.REMOVE_BG -> Toast.makeText(
-//                    requireContext(),
-//                    "請先去背",
-//                    Toast.LENGTH_LONG
-//                ).show()
-//
-//                Mode.SCREEN_SHOT -> Toast.makeText(
-//                    requireContext(),
-//                    "請先拍照",
-//                    Toast.LENGTH_LONG
-//                ).show()
-
-                Mode.SHARE -> viewModel.saveScreenToGallery(layoutToBitmap(objectContainerRelativeLayout)) {
-                    Toast.makeText(
-                        requireContext(),
-                        "已儲存至相簿",
-                        Toast.LENGTH_LONG
-                    ).show()
+            if (imageUri == null) {
+                progressBarDialogFragment.dialog?.show()
+                Toast.makeText(requireContext(), "儲存中...", Toast.LENGTH_SHORT).show()
+                thread {
+                    viewModel.saveScreenToGallery(layoutToBitmap(objectContainerRelativeLayout)) { uri ->
+                        GlobalScope.launch(Dispatchers.Main) {
+                            progressBarDialogFragment.dismiss()
+                            Toast.makeText(requireContext(), "成功儲存到相簿", Toast.LENGTH_LONG).show()
+                        }
+                        imageUri = uri
+                        share(requireActivity(), imageUri!!)
+                    }
                 }
+            } else {
+                share(requireActivity(), imageUri!!)
             }
         }
 
@@ -113,7 +133,10 @@ class Object2DCameraFragment : Fragment() {
                         when (mode) {
                             Mode.REMOVE_BG -> {
                                 Timber.i("remove bg mode")
-                                Toast.makeText(requireContext(), "去背中...", Toast.LENGTH_LONG).show()
+                                GlobalScope.launch(Dispatchers.Main) {
+                                    Toast.makeText(requireContext(), "去背中...", Toast.LENGTH_LONG).show()
+                                    progressBarDialogFragment.show(parentFragmentManager, null)
+                                }
                                 removeBitmapBg(bitmap)
                             }
                             Mode.SCREEN_SHOT -> {
@@ -126,7 +149,6 @@ class Object2DCameraFragment : Fragment() {
                                         bitmap
                                     ) {
                                         requireActivity().runOnUiThread {
-                                            Toast.makeText(requireContext(), "存擋完成", Toast.LENGTH_LONG).show()
                                             take_Button.setImageResource(R.mipmap.button_reset)
                                             mode = Mode.SHARE
                                         }
@@ -183,9 +205,7 @@ class Object2DCameraFragment : Fragment() {
 
     fun removeBitmapBg(bitmap: Bitmap) {
         viewModel.removeBg(bitmap) { noBgBitmap ->
-            requireActivity().runOnUiThread {
-                Toast.makeText(requireContext(), "去背完成", Toast.LENGTH_SHORT).show()
-
+            GlobalScope.launch(Dispatchers.Main) {
                 rotateZoomImageView = RotateZoomImageView(requireContext())
                 rotateZoomImageView.setImageBitmap(noBgBitmap)
                 rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
@@ -195,6 +215,9 @@ class Object2DCameraFragment : Fragment() {
 
                 take_Button.setImageResource(R.mipmap.button_camera)
                 mode = Mode.SCREEN_SHOT
+
+                Toast.makeText(requireContext(), "去背完成", Toast.LENGTH_SHORT).show()
+                progressBarDialogFragment.dialog?.hide()
             }
         }
     }

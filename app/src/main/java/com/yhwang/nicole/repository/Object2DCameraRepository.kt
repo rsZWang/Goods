@@ -2,6 +2,7 @@ package com.yhwang.nicole.repository
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import com.yhwang.nicole.database.GoodsDatabase
 import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.utility.bitmapToFile
@@ -16,7 +17,7 @@ class Object2DCameraRepository(
         removeBg(context, origin, callback)
     }
 
-    fun saveScreenToGallery(bitmap: Bitmap, callback: ()->Unit) {
+    fun saveScreenToGallery(bitmap: Bitmap, callback: (Uri)->Unit) {
         saveBitmapToGallery(context, bitmap, callback)
     }
 

@@ -22,6 +22,13 @@
         android:background="@android:color/transparent">
     </RelativeLayout>
 
+    <View
+        android:id="@+id/flash_animation_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:visibility="gone"/>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="100dp"

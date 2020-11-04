@@ -35,7 +35,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         // cool890104@gmail.com ESJkDD4fTYSiGpLZAqQ6rd2T
-        RemoveBg.init("ESJkDD4fTYSiGpLZAqQ6rd2T")
+        // cool890104@yahoo.com.tw facebook r2eWd8CpjHd1V6VWGSNpXDgP
+        RemoveBg.init("r2eWd8CpjHd1V6VWGSNpXDgP")
 
         runUpdate()
     }
