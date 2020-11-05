@@ -14,6 +14,7 @@ import com.yhwang.nicole.utility.fileToBitmap
 import com.yhwang.nicole.view.ObjectListFragmentDirections
 import com.yhwang.nicole.viewModel.ObjectListViewModel
 import timber.log.Timber
+import kotlin.concurrent.thread
 
 class Object2DListRecyclerViewAdapter(
     private val context: Context,
@@ -37,34 +38,30 @@ class Object2DListRecyclerViewAdapter(
     }
     override fun getItemCount(): Int = list.size
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val object2D = list[position]
         holder.itemView.setOnLongClickListener {
             MaterialAlertDialogBuilder(context)
                 .setMessage("確定要刪除這個物件？")
                 .setNegativeButton("取消", null)
                 .setPositiveButton("確定") { _, _ ->
-//                    Thread { viewModel.removeObject2D(list[position]) }.start()
+                    thread { viewModel.removeObject2D(list[position]) }
                 }
                 .setCancelable(false)
                 .show()
             true
         }
         holder.itemView.setOnClickListener {
-            Timber.i("pass object: %d", list[position].id)
+            Timber.i("pass object: %d", object2D.id)
             val destination = ObjectListFragmentDirections
-                .actionObjectListFragmentToObjectViewFragment(list[position], null)
+                .actionObjectListFragmentToObjectViewFragment(object2D, null)
             navController.navigate(destination)
         }
+
         holder.objectBgImageView.setImageBitmap(
-            fileToBitmap(
-                context,
-                list[position].backgroundFileName
-            )
+            fileToBitmap(context, object2D, isBackground = true)
         )
         holder.objectImageView.setImageBitmap(
-            fileToBitmap(
-                context,
-                list[position].objectFileName
-            )
+            fileToBitmap(context, object2D, isBackground = false)
         )
     }
 

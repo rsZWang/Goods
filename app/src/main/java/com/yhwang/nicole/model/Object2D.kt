@@ -12,14 +12,17 @@ class Object2D(
     @ColumnInfo(name = "x") val x: Float,
     @ColumnInfo(name = "y") val y: Float,
     @ColumnInfo(name = "background_file_name") val backgroundFileName: String,
-    @PrimaryKey(autoGenerate = true)
-    var id: Long = 0
+    @ColumnInfo(name = "isAsset") val isAsset: Boolean = false,
+    @PrimaryKey(autoGenerate = true) var id: Long = 0
 ) : Parcelable
 
 @Dao
 interface Object2DDao {
     @Query("SELECT * FROM object2D")
     fun getAllObject() : List<Object2D>
+
+    @Query("SELECT file_name FROM object2D")
+    fun getAllObjectName() : List<String>
 
     @Insert
     fun insertObject(object2D: Object2D)

@@ -2,6 +2,8 @@ package com.yhwang.nicole.utility
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -11,10 +13,10 @@ import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.ar.core.ArCoreApk
 import com.google.ar.core.exceptions.*
+import com.yhwang.nicole.R
 import timber.log.Timber
 import java.lang.Exception
 
@@ -103,4 +105,11 @@ fun checkArCoreCompatibility(activity: Activity, onAvailable: () -> Unit) {
             .setCancelable(false)
             .show()
     }
+}
+
+fun showProgressDialog(context: Context) : AlertDialog {
+    return AlertDialog.Builder(context)
+        .setCancelable(false)
+        .setView(R.layout.dialog_progress_bar)
+        .show()
 }

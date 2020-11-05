@@ -40,80 +40,72 @@ class ObjectViewFragment : Fragment() {
         }
     }
 
+    private var rootView: View? = null
     private lateinit var objectBgImageView: ImageView
     private lateinit var objectImageView: ImageView
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_object_view, container, false)
+        if (rootView == null) {
+            rootView = inflater.inflate(R.layout.fragment_object_view, container, false)
+            rootView!!.findViewById<ImageView>(R.id.back_arrow_ImageView).setOnClickListener {
+                findNavController().popBackStack()
+            }
+            objectBgImageView = rootView!!.findViewById(R.id.object_bg_ImageView)
+            objectImageView = rootView!!.findViewById(R.id.object_ImageView)
 
-        objectBgImageView = view.findViewById(R.id.object_bg_ImageView)
-        objectImageView = view.findViewById(R.id.object_ImageView)
-
-        return view
-    }
-
-    private lateinit var objectBitmap: Bitmap
-    private lateinit var timer: Timer
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        view.findViewById<ImageView>(R.id.back_arrow_ImageView).setOnClickListener {
-            findNavController().popBackStack()
-        }
-
-        if (mode == Mode.OBJECT_2D) {
-            objectBgImageView.setImageBitmap(fileToBitmap(requireContext(), object2D.backgroundFileName))
-            objectBitmap = fileToBitmap(requireContext(), object2D.objectFileName)
-        } else if (mode == Mode.OBJECT_3D) {
-            objectBgImageView.setImageBitmap(assetsImageToBitmap(requireContext().assets, "${object3D}_bg.jpeg"))
-            objectBitmap = assetsImageToBitmap(requireContext().assets, "${object3D}.png")
-        }
-        objectImageView.setImageBitmap(objectBitmap)
-        objectImageView.setOnClickListener {
-            Timber.i("navigate to ObjectViewFragment")
-            when (mode) {
-                Mode.OBJECT_2D -> {
-                    findNavController().navigate(
-                        ObjectViewFragmentDirections
-                            .actionObjectViewFragmentToObjectDetailFragment(object2D, null)
-                    )
-                }
-                Mode.OBJECT_3D -> {
-                    checkArCompatibility(requireActivity()) { isSupport ->
-                        if (isSupport) {
-                            findNavController().navigate(ObjectViewFragmentDirections
-                                .actionObjectViewFragmentToObjectDetailFragment(null, object3D)
-                            )
-                        }  else {
-                            MaterialAlertDialogBuilder(requireContext())
-                                .setMessage("此裝置不支援AR")
-                                .setPositiveButton("OK", null)
-                                .setCancelable(false)
-                                .show()
+            if (mode == Mode.OBJECT_2D) {
+                objectBgImageView.setImageBitmap(fileToBitmap(requireContext(), object2D, isBackground = true))
+                objectBitmap = fileToBitmap(requireContext(), object2D, isBackground = false)
+            } else if (mode == Mode.OBJECT_3D) {
+                objectBgImageView.setImageBitmap(assetsImageToBitmap(requireContext().assets, "${object3D}_bg.jpeg"))
+                objectBitmap = assetsImageToBitmap(requireContext().assets, "${object3D}.png")
+            }
+            objectBgImageView.clipToOutline = true
+            objectImageView.setImageBitmap(objectBitmap)
+            objectImageView.clipToOutline = true
+            objectImageView.setOnClickListener {
+                when (mode) {
+                    Mode.OBJECT_2D -> {
+                        findNavController().navigate(
+                            ObjectViewFragmentDirections
+                                .actionObjectViewFragmentToObjectDetailFragment(object2D, null)
+                        )
+                    }
+                    Mode.OBJECT_3D -> {
+                        checkArCompatibility(requireActivity()) { isSupport ->
+                            if (isSupport) {
+                                findNavController().navigate(ObjectViewFragmentDirections
+                                    .actionObjectViewFragmentToObjectDetailFragment(null, object3D)
+                                )
+                            }  else {
+                                MaterialAlertDialogBuilder(requireContext())
+                                    .setMessage("此裝置不支援AR")
+                                    .setPositiveButton("OK", null)
+                                    .setCancelable(false)
+                                    .show()
+                            }
                         }
                     }
                 }
             }
-        }
-        objectBgImageView.clipToOutline = true
-        objectImageView.clipToOutline = true
 
-        view.findViewById<ImageView>(R.id.view_in_ar_ImageView).setOnClickListener {
-            checkPermission(requireActivity() as AppCompatActivity, android.Manifest.permission.CAMERA) {
-                if (it) {
-                    when (mode) {
-                        Mode.OBJECT_2D -> {
-                            findNavController().navigate(
-                                ObjectViewFragmentDirections.actionObjectViewFragmentToObject2DCameraFragment(object2D)
-                            )
-                        }
-                        Mode.OBJECT_3D -> {
-                            checkArCoreCompatibility(requireActivity()) {
+            rootView!!.findViewById<ImageView>(R.id.view_in_ar_ImageView).setOnClickListener {
+                checkPermission(requireActivity() as AppCompatActivity, android.Manifest.permission.CAMERA) {
+                    if (it) {
+                        when (mode) {
+                            Mode.OBJECT_2D -> {
                                 findNavController().navigate(
-                                    ObjectViewFragmentDirections.actionObjectViewFragmentToObject3DCameraFragment(object3D)
+                                    ObjectViewFragmentDirections.actionObjectViewFragmentToObject2DCameraFragment(object2D)
                                 )
+                            }
+                            Mode.OBJECT_3D -> {
+                                checkArCoreCompatibility(requireActivity()) {
+                                    findNavController().navigate(
+                                        ObjectViewFragmentDirections.actionObjectViewFragmentToObject3DCameraFragment(object3D)
+                                    )
+                                }
                             }
                         }
                     }
@@ -121,6 +113,13 @@ class ObjectViewFragment : Fragment() {
             }
         }
 
+        return rootView
+    }
+
+    private lateinit var objectBitmap: Bitmap
+    private lateinit var timer: Timer
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         timer = Timer()
         timer.schedule(object : TimerTask() {
             override fun run() {
@@ -131,8 +130,8 @@ class ObjectViewFragment : Fragment() {
         }, 0, 1000)
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
         timer.cancel()
     }
 

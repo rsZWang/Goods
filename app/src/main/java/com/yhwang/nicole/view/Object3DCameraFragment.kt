@@ -1,7 +1,6 @@
 package com.yhwang.nicole.view
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.app.AlertDialog
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -13,29 +12,26 @@ import android.view.animation.Animation
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.ar.core.*
-import com.google.ar.core.exceptions.*
+import com.google.ar.core.Config
+import com.google.ar.core.HitResult
+import com.google.ar.core.Plane
+import com.google.ar.core.Session
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.ArSceneView
 import com.google.ar.sceneform.collision.Box
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
-import com.yhwang.nicole.ProgressBarDialogFragment
 import com.yhwang.nicole.R
-import com.yhwang.nicole.utility.checkPermission
 import com.yhwang.nicole.utility.saveBitmapToGallery
 import com.yhwang.nicole.utility.share
+import com.yhwang.nicole.utility.showProgressDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.lang.Exception
 import kotlin.concurrent.thread
 
 
@@ -49,6 +45,7 @@ class Object3DCameraFragment : Fragment() {
         }
     }
 
+    private lateinit var progressDialog: AlertDialog
     private var imageUri: Uri? = null
     private lateinit var tookBitmap: Bitmap
     private lateinit var tookPicture: ImageView
@@ -85,11 +82,12 @@ class Object3DCameraFragment : Fragment() {
             flashAnimationView.startAnimation(AlphaAnimation(1f, 0f).apply {
                 duration = 900
                 setAnimationListener(object : Animation.AnimationListener {
-                    override fun onAnimationStart(p0: Animation?) { }
+                    override fun onAnimationStart(p0: Animation?) {}
                     override fun onAnimationEnd(p0: Animation?) {
                         flashAnimationView.visibility = View.GONE
                     }
-                    override fun onAnimationRepeat(p0: Animation?) { }
+
+                    override fun onAnimationRepeat(p0: Animation?) {}
                 })
             })
         }
@@ -98,14 +96,13 @@ class Object3DCameraFragment : Fragment() {
         shareButton.visibility = View.GONE
         shareButton.setOnClickListener {
             if (imageUri == null) {
-                val progressBarDialogFragment = ProgressBarDialogFragment()
-                progressBarDialogFragment.show(parentFragmentManager, null)
+                progressDialog = showProgressDialog(requireContext())
                 Toast.makeText(requireContext(), "儲存中...", Toast.LENGTH_SHORT).show()
                 thread {
                     saveBitmapToGallery(requireContext(), tookBitmap) { uri ->
                         GlobalScope.launch(Dispatchers.Main) {
-                            progressBarDialogFragment.dismiss()
                             Toast.makeText(requireContext(), "成功儲存到相簿", Toast.LENGTH_LONG).show()
+                            progressDialog.dismiss()
                         }
                         imageUri = uri
                         share(requireActivity(), imageUri!!)
@@ -131,15 +128,20 @@ class Object3DCameraFragment : Fragment() {
     private lateinit var anchorNode: AnchorNode
     private lateinit var arFragment: ArFragment
     private fun startArSession() {
-        arFragment = childFragmentManager.findFragmentById(R.id.ar_3d_model_Fragment) as ArFragment
         val session = Session(requireContext())
-        val config = Config(session)
-        config.planeFindingMode = Config.PlaneFindingMode.HORIZONTAL_AND_VERTICAL
-        config.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
-        config.lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
-        session.configure(config)
-        arFragment.arSceneView.setupSession(session)
+        session.configure(session.config.apply {
+            planeFindingMode = Config.PlaneFindingMode.HORIZONTAL_AND_VERTICAL
+            updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
+            lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
+            if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+                depthMode = Config.DepthMode.AUTOMATIC
+            } else {
+                Timber.i("Depth API is not supported.")
+            }
+        })
 
+        arFragment = childFragmentManager.findFragmentById(R.id.ar_3d_model_Fragment) as ArFragment
+        arFragment.arSceneView.setupSession(session)
         arFragment.setOnTapArPlaneListener { hitResult: HitResult, _: Plane?, _: MotionEvent? ->
             ModelRenderable.builder()
                 .setSource(requireContext()) { requireContext().assets.open("object/$object3D.sfb") }

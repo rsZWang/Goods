@@ -2,12 +2,12 @@ package com.yhwang.nicole.view
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.os.StrictMode
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,15 +25,11 @@ import com.easystudio.rotateimageview.RotateZoomImageView
 import com.otaliastudios.cameraview.CameraListener
 import com.otaliastudios.cameraview.CameraView
 import com.otaliastudios.cameraview.PictureResult
-import com.yhwang.nicole.ProgressBarDialogFragment
 import com.yhwang.nicole.R
 import com.yhwang.nicole.database.GoodsDatabase
 import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.repository.Object2DCameraRepository
-import com.yhwang.nicole.utility.fileToBitmap
-import com.yhwang.nicole.utility.layoutToBitmap
-import com.yhwang.nicole.utility.share
-import com.yhwang.nicole.utility.trimTransparentPart
+import com.yhwang.nicole.utility.*
 import com.yhwang.nicole.viewModel.Object2DCameraViewModel
 import com.yhwang.nicole.viewModel.Object2DCameraViewModelFactory
 import kotlinx.android.synthetic.main.fragment_object_2d_camera.*
@@ -47,9 +43,10 @@ import kotlin.concurrent.thread
 @SuppressLint("ClickableViewAccessibility")
 class Object2DCameraFragment : Fragment() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
+    enum class Mode {
+        REMOVE_BG,
+        SCREEN_SHOT,
+        SHARE
     }
 
     private lateinit var flashAnimationView: View
@@ -81,7 +78,7 @@ class Object2DCameraFragment : Fragment() {
         Object2DCameraViewModelFactory(Object2DCameraRepository(requireContext(), GoodsDatabase.getInstance(requireContext())!!))
     }
 
-    private val progressBarDialogFragment = ProgressBarDialogFragment()
+    private lateinit var progressAlertDialog: AlertDialog
     private var imageUri: Uri? = null
     private lateinit var mode: Mode
     private lateinit var rotateZoomImageView: RotateZoomImageView
@@ -108,12 +105,12 @@ class Object2DCameraFragment : Fragment() {
 
         share_button.setOnClickListener {
             if (imageUri == null) {
-                progressBarDialogFragment.dialog?.show()
+                progressAlertDialog = showProgressDialog(requireContext())
                 Toast.makeText(requireContext(), "儲存中...", Toast.LENGTH_SHORT).show()
                 thread {
                     viewModel.saveScreenToGallery(layoutToBitmap(objectContainerRelativeLayout)) { uri ->
                         GlobalScope.launch(Dispatchers.Main) {
-                            progressBarDialogFragment.dismiss()
+                            progressAlertDialog.dismiss()
                             Toast.makeText(requireContext(), "成功儲存到相簿", Toast.LENGTH_LONG).show()
                         }
                         imageUri = uri
@@ -135,7 +132,7 @@ class Object2DCameraFragment : Fragment() {
                                 Timber.i("remove bg mode")
                                 GlobalScope.launch(Dispatchers.Main) {
                                     Toast.makeText(requireContext(), "去背中...", Toast.LENGTH_LONG).show()
-                                    progressBarDialogFragment.show(parentFragmentManager, null)
+                                    progressAlertDialog = showProgressDialog(requireContext())
                                 }
                                 removeBitmapBg(bitmap)
                             }
@@ -167,11 +164,12 @@ class Object2DCameraFragment : Fragment() {
             }
         })
 
-        if (requireArguments()["object"]!=null) {
-            val object2D = requireArguments()["object"] as Object2D
-            Timber.i("Object2D id: %d", object2D.id)
-            val bitmap = trimTransparentPart(fileToBitmap(requireContext(), object2D.objectFileName))
+        if (requireArguments()["object2D"]!=null) {
+            val object2D = requireArguments()["object2D"] as Object2D
+            Timber.i("Object2D id: ${object2D.id}")
+            val bitmap = trimTransparentPart(fileToBitmap(requireContext(), object2D, isBackground = false))
             rotateZoomImageView = RotateZoomImageView(requireContext())
+            rotateZoomImageView.adjustViewBounds = true
             rotateZoomImageView.setImageBitmap(bitmap)
             rotateZoomImageView.setOnTouchListener { view, motionEvent -> rotateZoomImageView.onTouch(view, motionEvent) }
             val layoutParams = RelativeLayout.LayoutParams(bitmap.width, bitmap.height)
@@ -192,12 +190,9 @@ class Object2DCameraFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-//        (activity as AppCompatActivity).toolbar.background =  ColorDrawable(Color.BLACK)
-
         if (checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.CAMERA), 0)
         }
-
         if (checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
         }
@@ -217,14 +212,8 @@ class Object2DCameraFragment : Fragment() {
                 mode = Mode.SCREEN_SHOT
 
                 Toast.makeText(requireContext(), "去背完成", Toast.LENGTH_SHORT).show()
-                progressBarDialogFragment.dialog?.hide()
+                progressAlertDialog.dismiss()
             }
         }
-    }
-
-    enum class Mode {
-        REMOVE_BG,
-        SCREEN_SHOT,
-        SHARE
     }
 }

@@ -11,9 +11,10 @@ import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.utility.deleteImageFile
 import timber.log.Timber
+import kotlin.concurrent.thread
 
 class ObjectListRepository(
-    val context: Context,
+    private val context: Context,
     private val room: GoodsDatabase
 ) {
     fun getObjectDrawableImage(): LiveData<ArrayList<Drawable>> {
@@ -30,15 +31,25 @@ class ObjectListRepository(
     }
 
     fun getObject2DList(callback: (ArrayList<Object2D>)->Unit) {
-        Thread {
+        thread {
             callback(ArrayList(room.object2DDao().getAllObject()))
-        }.start()
+        }
+    }
+
+    fun getObject2DNameList(callback: (List<String>) -> Unit) {
+        thread {
+            callback(room.object2DDao().getAllObjectName())
+        }
     }
 
     fun removeObject2D(object2D: Object2D) {
         room.object2DDao().deleteObject(object2D)
         deleteImageFile(context, object2D.objectFileName)
         deleteImageFile(context, object2D.backgroundFileName)
+    }
+
+    fun saveAssetsObject2D(objectName: String, backgroundName: String) {
+        room.object2DDao().insertObject(Object2D(objectName, 0f, 0f, backgroundName, isAsset = true))
     }
 
     fun getObject3DList(assetManager: AssetManager) : ArrayList<String> {

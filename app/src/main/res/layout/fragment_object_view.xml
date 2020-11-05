@@ -45,8 +45,8 @@
     <ImageView
         android:id="@+id/object_bg_ImageView"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:scaleType="fitCenter"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
         android:background="@drawable/border_object"
         app:layout_constraintWidth_percent="0.85"
         app:layout_constraintHeight_percent="0.85"
@@ -58,7 +58,8 @@
     <ImageView
         android:id="@+id/object_ImageView"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
         android:background="@drawable/border_object"
         app:layout_constraintWidth_percent="0.85"
         app:layout_constraintHeight_percent="0.85"

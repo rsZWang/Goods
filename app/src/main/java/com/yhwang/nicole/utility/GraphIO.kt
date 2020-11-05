@@ -17,6 +17,7 @@ import android.provider.MediaStore
 import android.widget.ImageView
 import com.theapache64.removebg.RemoveBg
 import com.theapache64.removebg.utils.ErrorResponse
+import com.yhwang.nicole.model.Object2D
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -78,10 +79,14 @@ fun assetsImageToBitmap(assetManager: AssetManager, fileName: String) : Bitmap {
     return BitmapFactory.decodeStream(inputStream)
 }
 
-fun fileToBitmap(context: Context, fileName: String) : Bitmap {
-    var file = ContextWrapper(context).getDir(Environment.DIRECTORY_PICTURES, Context.MODE_PRIVATE)
-    file = File(file, fileName)
-    return BitmapFactory.decodeFile(file.path)
+fun fileToBitmap(context: Context, object2D: Object2D, isBackground: Boolean) : Bitmap {
+    return if (object2D.isAsset) {
+        BitmapFactory.decodeStream(context.assets.open("object_2d/${ if (isBackground) object2D.backgroundFileName else object2D.objectFileName }"))
+    } else {
+        var file = ContextWrapper(context).getDir(Environment.DIRECTORY_PICTURES, Context.MODE_PRIVATE)
+        file = File(file, if (isBackground) object2D.backgroundFileName else object2D.objectFileName )
+        BitmapFactory.decodeFile(file.path)
+    }
 }
 
 fun bitmapToFile(context: Context, bitmap: Bitmap, fileName: String, format: Bitmap.CompressFormat) {

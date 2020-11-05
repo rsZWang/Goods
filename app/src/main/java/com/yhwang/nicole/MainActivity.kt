@@ -3,6 +3,7 @@ package com.yhwang.nicole
 
 import android.os.Bundle
 import android.os.Environment
+import android.os.StrictMode
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.theapache64.removebg.RemoveBg
@@ -26,17 +27,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
         if (BuildConfig.DEBUG) {
             Timber.plant(ThreadIncludedDebugTree())
         } else {
             Timber.plant(ReleaseTree())
         }
 
+        setContentView(R.layout.activity_main)
         // cool890104@gmail.com ESJkDD4fTYSiGpLZAqQ6rd2T
         // cool890104@yahoo.com.tw facebook r2eWd8CpjHd1V6VWGSNpXDgP
         RemoveBg.init("r2eWd8CpjHd1V6VWGSNpXDgP")
+
+        StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
 
         runUpdate()
     }

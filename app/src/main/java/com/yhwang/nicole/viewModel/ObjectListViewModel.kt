@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.repository.ObjectListRepository
 import timber.log.Timber
+import javax.security.auth.callback.Callback
 
 class ObjectListViewModel(
     private val repository: ObjectListRepository
@@ -28,6 +29,18 @@ class ObjectListViewModel(
     var object3DList = MutableLiveData<ArrayList<String>>()
     fun getObject3DList(assetManager: AssetManager) {
         object3DList.postValue(repository.getObject3DList(assetManager))
+    }
+
+    fun updateObject2D(list: Array<String>, callback: () -> Unit) {
+        repository.getObject2DNameList { nameList ->
+            for (file in list) {
+                if (!nameList.contains(file) && !file.contains("nobg")) {
+                    Timber.i("Save $file")
+                    repository.saveAssetsObject2D("${file.removeSuffix(".jpg")}_nobg.png", file)
+                }
+            }
+            callback()
+        }
     }
 
     companion object {
