@@ -30,18 +30,18 @@
             style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title" />
     </androidx.appcompat.widget.Toolbar>
 
-    <Button
-        android:id="@+id/switch_mode_Button"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:text="3D"
-        android:textSize="20sp"
-        android:textColor="@android:color/darker_gray"
-        android:background="@android:color/transparent"
-        app:layout_constraintBottom_toTopOf="@+id/view"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar" />
+<!--    <Button-->
+<!--        android:id="@+id/switch_mode_Button"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginEnd="10dp"-->
+<!--        android:text="3D"-->
+<!--        android:textSize="16sp"-->
+<!--        android:textColor="@android:color/darker_gray"-->
+<!--        android:background="@android:color/transparent"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/view"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/toolbar" />-->
 
     <View
         android:id="@+id/view"
@@ -67,15 +67,15 @@
         app:layout_constraintHeight_percent="0.78"
         app:layout_constraintTop_toTopOf="@+id/view" />
 
-    <TextView
-        android:id="@+id/empty_hint_TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="There is no object yet."
-        app:layout_constraintBottom_toBottomOf="@+id/object_2d_list_RecyclerView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/object_2d_list_RecyclerView" />
+<!--    <TextView-->
+<!--        android:id="@+id/empty_hint_TextView"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="There is no object yet."-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/object_2d_list_RecyclerView"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/object_2d_list_RecyclerView" />-->
 
     <FrameLayout
         android:id="@+id/bottom_FrameLayout"
@@ -104,7 +104,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
-        android:text="v1.5.0"
+        android:text="v2.2.2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

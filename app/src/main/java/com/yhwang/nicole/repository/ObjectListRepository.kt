@@ -49,7 +49,15 @@ class ObjectListRepository(
     }
 
     fun saveAssetsObject2D(objectName: String, backgroundName: String) {
-        room.object2DDao().insertObject(Object2D(objectName, 0f, 0f, backgroundName, isAsset = true))
+        Timber.i("Object name: $objectName")
+        Timber.i("Object bg name: $backgroundName")
+        room.object2DDao().insertObject(Object2D(
+            objectFileName = objectName,
+            0f,
+            0f,
+            backgroundFileName = backgroundName,
+            isAsset = true)
+        )
     }
 
     fun getObject3DList(assetManager: AssetManager) : ArrayList<String> {

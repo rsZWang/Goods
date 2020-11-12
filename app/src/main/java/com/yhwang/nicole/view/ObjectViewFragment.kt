@@ -33,6 +33,8 @@ class ObjectViewFragment : Fragment() {
             if (it["object2D"]!=null) {
                 object2D = it["object2D"] as Object2D
                 mode = Mode.OBJECT_2D
+                Timber.i("Object: ${object2D!!.objectFileName}")
+                Timber.i("background: ${object2D!!.backgroundFileName}")
             } else if (it["object3D"]!=null) {
                 object3D = it["object3D"] as String
                 mode = Mode.OBJECT_3D
@@ -120,19 +122,19 @@ class ObjectViewFragment : Fragment() {
     private lateinit var timer: Timer
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        timer = Timer()
-        timer.schedule(object : TimerTask() {
-            override fun run() {
-                requireActivity().runOnUiThread {
-                    highlight()
-                }
-            }
-        }, 0, 1000)
+//        timer = Timer()
+//        timer.schedule(object : TimerTask() {
+//            override fun run() {
+//                requireActivity().runOnUiThread {
+//                    highlight()
+//                }
+//            }
+//        }, 0, 1000)
     }
 
     override fun onStop() {
         super.onStop()
-        timer.cancel()
+//        timer.cancel()
     }
 
     private var isOutlineDrawn = false

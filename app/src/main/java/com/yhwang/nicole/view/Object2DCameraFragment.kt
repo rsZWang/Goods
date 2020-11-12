@@ -25,6 +25,7 @@ import com.easystudio.rotateimageview.RotateZoomImageView
 import com.otaliastudios.cameraview.CameraListener
 import com.otaliastudios.cameraview.CameraView
 import com.otaliastudios.cameraview.PictureResult
+import com.otaliastudios.cameraview.controls.Facing
 import com.yhwang.nicole.R
 import com.yhwang.nicole.database.GoodsDatabase
 import com.yhwang.nicole.model.Object2D
@@ -120,6 +121,15 @@ class Object2DCameraFragment : Fragment() {
             } else {
                 share(requireActivity(), imageUri!!)
             }
+        }
+
+        var currentFacing = Facing.BACK
+        view.findViewById<ImageButton>(R.id.flip_camera_button).setOnClickListener {
+            currentFacing  = when (currentFacing) {
+                Facing.BACK -> Facing.FRONT
+                Facing.FRONT -> Facing.BACK
+            }
+            cameraView.facing = currentFacing
         }
 
         cameraView.addCameraListener(object : CameraListener() {
