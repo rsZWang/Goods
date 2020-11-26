@@ -1,28 +1,44 @@
 package com.yhwang.nicole.view
 
 import android.annotation.SuppressLint
-import android.graphics.*
+import android.content.Context
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.ar.core.ArCoreApk
 import com.yhwang.nicole.Mode
 import com.yhwang.nicole.R
 import com.yhwang.nicole.model.Object2D
 import com.yhwang.nicole.utility.*
 import timber.log.Timber
-import java.util.*
-import java.util.jar.Manifest
 
 
 @SuppressLint("ClickableViewAccessibility")
 class ObjectViewFragment : Fragment() {
+
+    private lateinit var cameraPermissionCheckerLauncher: ActivityResultLauncher<String>
+    private var cameraPermissionCheckerCallback: ((Boolean) -> Unit)? = null
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        cameraPermissionCheckerLauncher = registerPermissionCheckLauncher(
+            requireActivity(),
+            this,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        ) { isGranted ->
+            cameraPermissionCheckerCallback?.invoke(isGranted)
+        }
+    }
+
+    private fun checkCameraPermission(callback: (Boolean) -> Unit ) {
+        cameraPermissionCheckerCallback = callback
+        cameraPermissionCheckerLauncher.launch(android.Manifest.permission.CAMERA)
+    }
 
     private lateinit var mode: Mode
     private lateinit var object2D: Object2D
@@ -33,8 +49,8 @@ class ObjectViewFragment : Fragment() {
             if (it["object2D"]!=null) {
                 object2D = it["object2D"] as Object2D
                 mode = Mode.OBJECT_2D
-                Timber.i("Object: ${object2D!!.objectFileName}")
-                Timber.i("background: ${object2D!!.backgroundFileName}")
+                Timber.i("Object: ${object2D.objectFileName}")
+                Timber.i("background: ${object2D.backgroundFileName}")
             } else if (it["object3D"]!=null) {
                 object3D = it["object3D"] as String
                 mode = Mode.OBJECT_3D
@@ -45,6 +61,7 @@ class ObjectViewFragment : Fragment() {
     private var rootView: View? = null
     private lateinit var objectBgImageView: ImageView
     private lateinit var objectImageView: ImageView
+    private lateinit var objectBitmap: Bitmap
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -59,13 +76,13 @@ class ObjectViewFragment : Fragment() {
 
             if (mode == Mode.OBJECT_2D) {
                 objectBgImageView.setImageBitmap(fileToBitmap(requireContext(), object2D, isBackground = true))
-                objectBitmap = fileToBitmap(requireContext(), object2D, isBackground = false)
+                objectImageView.setImageBitmap(fileToBitmap(requireContext(), object2D, isBackground = false))
             } else if (mode == Mode.OBJECT_3D) {
                 objectBgImageView.setImageBitmap(assetsImageToBitmap(requireContext().assets, "${object3D}_bg.jpeg"))
-                objectBitmap = assetsImageToBitmap(requireContext().assets, "${object3D}.png")
+                objectImageView.setImageBitmap(assetsImageToBitmap(requireContext().assets, "${object3D}.png"))
             }
             objectBgImageView.clipToOutline = true
-            objectImageView.setImageBitmap(objectBitmap)
+//            objectImageView.setImageBitmap(objectBitmap)
             objectImageView.clipToOutline = true
             objectImageView.setOnClickListener {
                 when (mode) {
@@ -94,8 +111,8 @@ class ObjectViewFragment : Fragment() {
             }
 
             rootView!!.findViewById<ImageView>(R.id.view_in_ar_ImageView).setOnClickListener {
-                checkPermission(requireActivity() as AppCompatActivity, android.Manifest.permission.CAMERA) {
-                    if (it) {
+                checkCameraPermission { isGranted ->
+                    if (isGranted) {
                         when (mode) {
                             Mode.OBJECT_2D -> {
                                 findNavController().navigate(
@@ -118,38 +135,4 @@ class ObjectViewFragment : Fragment() {
         return rootView
     }
 
-    private lateinit var objectBitmap: Bitmap
-    private lateinit var timer: Timer
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-//        timer = Timer()
-//        timer.schedule(object : TimerTask() {
-//            override fun run() {
-//                requireActivity().runOnUiThread {
-//                    highlight()
-//                }
-//            }
-//        }, 0, 1000)
-    }
-
-    override fun onStop() {
-        super.onStop()
-//        timer.cancel()
-    }
-
-    private var isOutlineDrawn = false
-    private var outlineObjectBitmap: Bitmap? = null
-    private fun highlight() {
-        if (isOutlineDrawn) {
-            Timber.i("Remove outline")
-            objectImageView.setImageBitmap(objectBitmap)
-        } else {
-            Timber.i("Draw outline")
-            if (outlineObjectBitmap == null) {
-                outlineObjectBitmap = highlight(requireContext(), objectBitmap)
-            }
-            objectImageView.setImageBitmap(outlineObjectBitmap)
-        }
-        isOutlineDrawn = !isOutlineDrawn
-    }
 }

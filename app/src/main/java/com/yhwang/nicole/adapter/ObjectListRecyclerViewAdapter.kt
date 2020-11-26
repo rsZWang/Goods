@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.yhwang.nicole.R
@@ -14,8 +13,6 @@ import com.yhwang.nicole.utility.assetsImageToBitmap
 import com.yhwang.nicole.utility.fileToBitmap
 import com.yhwang.nicole.view.ObjectListFragment
 import com.yhwang.nicole.view.ObjectListFragmentDirections
-import com.yhwang.nicole.viewModel.ObjectListViewModel
-import timber.log.Timber
 
 class ObjectListRecyclerViewAdapter(
     private val context: Context,
@@ -45,7 +42,7 @@ class ObjectListRecyclerViewAdapter(
                     navController.navigate(ObjectListFragmentDirections
                         .actionObjectListFragmentToObjectViewFragment(object2D = obj.object2D!!, object3D = null))
                 }
-                holder.dimensionTextView.text = "2D"
+//                holder.dimensionTextView.text = "2D"
                 holder.objectBgImageView.setImageBitmap(
                     fileToBitmap(context, obj.object2D!!, isBackground = true)
                 )
@@ -59,7 +56,7 @@ class ObjectListRecyclerViewAdapter(
                     navController.navigate(ObjectListFragmentDirections
                         .actionObjectListFragmentToObjectViewFragment(object2D = null, object3D = obj.object3D))
                 }
-                holder.dimensionTextView.text = "3D"
+//                holder.dimensionTextView.text = "3D"
                 holder.objectBgImageView.setImageBitmap(assetsImageToBitmap(assetManager, "${obj.object3D}_original.jpeg"))
                 holder.objectImageView.setImageBitmap(null)
             }
@@ -67,7 +64,7 @@ class ObjectListRecyclerViewAdapter(
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val dimensionTextView: TextView = view.findViewById(R.id.dimension_TextView)
+//        val dimensionTextView: TextView = view.findViewById(R.id.dimension_TextView)
         val objectBgImageView: ImageView = view.findViewById(R.id.object_bg_ImageView)
         val objectImageView: ImageView = view.findViewById(R.id.object_ImageView)
     }

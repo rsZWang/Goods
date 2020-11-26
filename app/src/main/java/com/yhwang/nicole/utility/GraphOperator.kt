@@ -113,7 +113,7 @@ fun trimTransparentPart(bitmap: Bitmap): Bitmap {
     buffer = IntArray(bufferSize)
     Arrays.fill(empty, 0)
     for (x in 0 until width) {
-        bitmap.getPixels(buffer, 0, 1, x, top + 1, 1, bufferSize)
+        bitmap.getPixels(buffer, 0, 1, x, top, 1, bufferSize)
         if (!empty.contentEquals(buffer)) {
             left = x
             break
@@ -121,7 +121,7 @@ fun trimTransparentPart(bitmap: Bitmap): Bitmap {
     }
     Arrays.fill(empty, 0)
     for (x in width - 1 downTo left + 1) {
-        bitmap.getPixels(buffer, 0, 1, x, top + 1, 1, bufferSize)
+        bitmap.getPixels(buffer, 0, 1, x, top, 1, bufferSize)
         if (!empty.contentEquals(buffer)) {
             right = x
             break

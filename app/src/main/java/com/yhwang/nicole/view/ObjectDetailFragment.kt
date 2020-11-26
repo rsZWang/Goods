@@ -1,12 +1,14 @@
 package com.yhwang.nicole.view
 
+import android.Manifest
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.ActivityResultLauncher
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -24,6 +26,24 @@ import com.yhwang.nicole.utility.*
 import timber.log.Timber
 
 class ObjectDetailFragment : Fragment() {
+
+    private lateinit var cameraPermissionCheckerLauncher: ActivityResultLauncher<String>
+    private var cameraPermissionCheckerCallback: ((Boolean) -> Unit)? = null
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        cameraPermissionCheckerLauncher = registerPermissionCheckLauncher(
+            requireActivity(),
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) { isGranted ->
+            cameraPermissionCheckerCallback?.invoke(isGranted)
+        }
+    }
+
+    private fun checkCameraPermission(callback: (Boolean) -> Unit ) {
+        cameraPermissionCheckerCallback = callback
+        cameraPermissionCheckerLauncher.launch(Manifest.permission.CAMERA)
+    }
 
     private lateinit var mode: Mode
     private lateinit var object2D: Object2D
@@ -56,7 +76,7 @@ class ObjectDetailFragment : Fragment() {
             }
             rootView!!.findViewById<ConstraintLayout>(R.id.view_in_ar_ConstraintLayout).setOnClickListener {
                 Timber.i("View in AR")
-                checkPermission(requireActivity() as AppCompatActivity, android.Manifest.permission.CAMERA) {
+                checkCameraPermission {
                     when (mode) {
                         Mode.OBJECT_2D -> findNavController().navigate(
                             ObjectDetailFragmentDirections.actionObjectDetailFragmentToObject2DCameraFragment(
@@ -80,9 +100,7 @@ class ObjectDetailFragment : Fragment() {
         when (mode) {
             Mode.OBJECT_2D -> {
                 rootView!!.findViewById<ImageView>(R.id.object_2d_ImageView).setImageBitmap(
-                    trimTransparentPart(
-                        fileToBitmap(requireContext(), object2D, isBackground = false)
-                    )
+                    fileToBitmap(requireContext(), object2D, isBackground = false)
                 )
                 rootView!!.findViewById<ImageView>(R.id.object_2d_ImageView).visibility = View.VISIBLE
             }

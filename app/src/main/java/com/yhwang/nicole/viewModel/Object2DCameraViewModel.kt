@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.yhwang.nicole.repository.Object2DCameraRepository
+import kotlin.concurrent.thread
 
 class Object2DCameraViewModel(
     private val cameraRepository: Object2DCameraRepository
@@ -12,16 +13,23 @@ class Object2DCameraViewModel(
     fun removeBg(bitmap: Bitmap, callback: (bitmap: Bitmap) -> Unit) =
         cameraRepository.removeBg(bitmap, callback)
 
-    fun saveScreenToGallery(bitmap: Bitmap, callback: (Uri)->Unit) =
-        cameraRepository.saveScreenToGallery(bitmap, callback)
+    fun saveScreenToGallery(bitmap: Bitmap, callback: (Uri)->Unit) {
+        thread {
+            cameraRepository.saveScreenToGallery(bitmap, callback)
+        }
+    }
 
-    fun saveObjectAndBg(objectBitmap: Bitmap, x: Float, y: Float, background: Bitmap, callback: () -> Unit) =
-        cameraRepository.saveObjectAndBg(
-            objectBitmap,
-            x,
-            y,
-            background,
-            callback)
+    fun saveObjectAndBg(objectBitmap: Bitmap, x: Float, y: Float, background: Bitmap, callback: () -> Unit) {
+        thread {
+            cameraRepository.saveObjectAndBg(
+                objectBitmap,
+                x,
+                y,
+                background,
+                callback
+            )
+        }
+    }
 }
 
 class Object2DCameraViewModelFactory(

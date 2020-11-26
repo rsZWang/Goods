@@ -7,12 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.yhwang.nicole.BuildConfig
 import com.yhwang.nicole.Mode
 import com.yhwang.nicole.R
 import com.yhwang.nicole.adapter.Object2DListRecyclerViewAdapter
@@ -146,7 +148,10 @@ class ObjectListFragment : Fragment() {
                     }
                 }
             }
+
+            rootView!!.findViewById<TextView>(R.id.version_textView).text = BuildConfig.VERSION_NAME
         }
+
         return rootView
     }
 

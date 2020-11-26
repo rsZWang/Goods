@@ -3,6 +3,7 @@ package com.yhwang.nicole.view
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -17,6 +18,7 @@ import android.view.animation.Animation
 import android.widget.ImageButton
 import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -33,13 +35,11 @@ import com.yhwang.nicole.repository.Object2DCameraRepository
 import com.yhwang.nicole.utility.*
 import com.yhwang.nicole.viewModel.Object2DCameraViewModel
 import com.yhwang.nicole.viewModel.Object2DCameraViewModelFactory
-import kotlinx.android.synthetic.main.fragment_object_2d_camera.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.concurrent.thread
-
 
 @SuppressLint("ClickableViewAccessibility")
 class Object2DCameraFragment : Fragment() {
@@ -48,6 +48,38 @@ class Object2DCameraFragment : Fragment() {
         REMOVE_BG,
         SCREEN_SHOT,
         SHARE
+    }
+
+    private lateinit var storagePermissionCheckerLauncher: ActivityResultLauncher<String>
+    private var storagePermissionCheckerCallback: ((Boolean) -> Unit)? = null
+    private lateinit var cameraPermissionCheckerLauncher: ActivityResultLauncher<String>
+    private var cameraPermissionCheckerCallback: ((Boolean) -> Unit)? = null
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        storagePermissionCheckerLauncher = registerPermissionCheckLauncher(
+            requireActivity(),
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) { isGranted ->
+            storagePermissionCheckerCallback?.invoke(isGranted)
+        }
+        cameraPermissionCheckerLauncher = registerPermissionCheckLauncher(
+            requireActivity(),
+            this,
+            Manifest.permission.CAMERA
+        ) { isGranted ->
+            cameraPermissionCheckerCallback?.invoke(isGranted)
+        }
+    }
+
+    private fun checkStoragePermission(callback: (Boolean) -> Unit ) {
+        storagePermissionCheckerCallback = callback
+        storagePermissionCheckerLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    }
+
+    private fun checkCameraPermission(callback: (Boolean) -> Unit ) {
+        cameraPermissionCheckerCallback = callback
+        cameraPermissionCheckerLauncher.launch(Manifest.permission.CAMERA)
     }
 
     private lateinit var flashAnimationView: View
@@ -87,40 +119,32 @@ class Object2DCameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        take_Button.setOnClickListener {
-            GlobalScope.launch(Dispatchers.Main) {
-                flashAnimationView.visibility = View.VISIBLE
-                flashAnimationView.startAnimation(AlphaAnimation(1f, 0f).apply {
-                    duration = 1000
-                    setAnimationListener(object : Animation.AnimationListener {
-                        override fun onAnimationStart(p0: Animation?) { }
-                        override fun onAnimationEnd(p0: Animation?) {
-                            flashAnimationView.visibility = View.GONE
-                        }
-                        override fun onAnimationRepeat(p0: Animation?) { }
+        takeButton.setOnClickListener {
+            if (mode != Mode.SHARE) {
+                cameraView.takePictureSnapshot()
+                GlobalScope.launch(Dispatchers.Main) {
+                    flashAnimationView.visibility = View.VISIBLE
+                    flashAnimationView.startAnimation(AlphaAnimation(1f, 0f).apply {
+                        duration = 1000
+                        setAnimationListener(object : Animation.AnimationListener {
+                            override fun onAnimationStart(p0: Animation?) { }
+                            override fun onAnimationEnd(p0: Animation?) {
+                                flashAnimationView.visibility = View.GONE
+                            }
+                            override fun onAnimationRepeat(p0: Animation?) { }
+                        })
                     })
-                })
-            }
-            cameraView.takePictureSnapshot()
-        }
-
-        share_button.setOnClickListener {
-            if (imageUri == null) {
-                progressAlertDialog = showProgressDialog(requireContext())
-                Toast.makeText(requireContext(), "儲存中...", Toast.LENGTH_SHORT).show()
-                thread {
-                    viewModel.saveScreenToGallery(layoutToBitmap(objectContainerRelativeLayout)) { uri ->
-                        GlobalScope.launch(Dispatchers.Main) {
-                            progressAlertDialog.dismiss()
-                            Toast.makeText(requireContext(), "成功儲存到相簿", Toast.LENGTH_LONG).show()
-                        }
-                        imageUri = uri
-                        share(requireActivity(), imageUri!!)
-                    }
                 }
             } else {
-                share(requireActivity(), imageUri!!)
+                takeButton.setImageResource(R.mipmap.button_camera)
+                shareButton.visibility = View.INVISIBLE
+                objectContainerRelativeLayout.background = null
+                mode = Mode.SCREEN_SHOT
             }
+        }
+
+        shareButton.setOnClickListener {
+            share(requireActivity(), imageUri!!)
         }
 
         var currentFacing = Facing.BACK
@@ -147,25 +171,36 @@ class Object2DCameraFragment : Fragment() {
                                 removeBitmapBg(bitmap)
                             }
                             Mode.SCREEN_SHOT -> {
-                                Thread {
-                                    Timber.i("screen shot mode")
-                                    viewModel.saveObjectAndBg(
-                                        layoutToBitmap(objectContainerRelativeLayout),
-                                        rotateZoomImageView.x,
-                                        rotateZoomImageView.y,
-                                        bitmap
-                                    ) {
-                                        requireActivity().runOnUiThread {
-                                            take_Button.setImageResource(R.mipmap.button_reset)
-                                            mode = Mode.SHARE
-                                        }
-                                    }
-                                    requireActivity().runOnUiThread {
+                                Timber.i("screen shot mode")
+                                Toast.makeText(requireContext(), "儲存至APP中...", Toast.LENGTH_SHORT).show()
+                                viewModel.saveObjectAndBg(
+                                    layoutToBitmap(objectContainerRelativeLayout),
+                                    rotateZoomImageView.x,
+                                    rotateZoomImageView.y,
+                                    bitmap
+                                ) {
+                                    mode = Mode.SHARE
+                                    GlobalScope.launch(Dispatchers.Main) {
+                                        Toast.makeText(requireContext(), "成功儲存至APP", Toast.LENGTH_SHORT).show()
+                                        objectContainerRelativeLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                                            override fun onGlobalLayout() {
+                                                objectContainerRelativeLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                                                Toast.makeText(requireContext(), "儲存至手機中...", Toast.LENGTH_SHORT).show()
+                                                viewModel.saveScreenToGallery(layoutToBitmap(objectContainerRelativeLayout)) { uri ->
+                                                    GlobalScope.launch(Dispatchers.Main) {
+                                                        imageUri = uri
+                                                        Toast.makeText(requireContext(), "成功儲存至相簿", Toast.LENGTH_SHORT).show()
+                                                        takeButton.setImageResource(R.mipmap.button_reset)
+                                                        shareButton.visibility = View.VISIBLE
+                                                        progressAlertDialog.dismiss()
+                                                    }
+                                                }
+                                            }
+                                        })
+                                        progressAlertDialog = showProgressDialog(requireContext())
                                         objectContainerRelativeLayout.background = BitmapDrawable(resources, bitmap)
-                                        takeButton.visibility = View.GONE
-                                        shareButton.visibility = View.VISIBLE
                                     }
-                                }.start()
+                                }
                             }
                             else -> Timber.e("mode error")
                         }
@@ -191,7 +226,7 @@ class Object2DCameraFragment : Fragment() {
                     objectContainerRelativeLayout.addView(rotateZoomImageView, layoutParams)
                 }
             })
-            take_Button.setImageResource(R.mipmap.button_camera)
+            takeButton.setImageResource(R.mipmap.button_camera)
             mode = Mode.SCREEN_SHOT
         } else {
             mode = Mode.REMOVE_BG
@@ -201,10 +236,10 @@ class Object2DCameraFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.CAMERA), 0)
+            checkCameraPermission { }
         }
         if (checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+            checkStoragePermission { }
         }
     }
 
@@ -218,7 +253,7 @@ class Object2DCameraFragment : Fragment() {
                 val layoutParams = RelativeLayout.LayoutParams(objectContainerRelativeLayout.width, objectContainerRelativeLayout.height)
                 objectContainerRelativeLayout.addView(rotateZoomImageView, layoutParams)
 
-                take_Button.setImageResource(R.mipmap.button_camera)
+                takeButton.setImageResource(R.mipmap.button_camera)
                 mode = Mode.SCREEN_SHOT
 
                 Toast.makeText(requireContext(), "去背完成", Toast.LENGTH_SHORT).show()
