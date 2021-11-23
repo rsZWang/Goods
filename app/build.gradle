@@ -8,13 +8,13 @@ apply plugin: 'com.google.ar.sceneform.plugin'
 android {
     signingConfigs {
         debug {
-            storeFile file('/Users/nihontabako/Desktop/Projects/Nicole/keyStore')
+            storeFile file("${rootDir}/keyStore")
             storePassword 'nicole1111'
             keyAlias 'key0'
             keyPassword 'nicole1111'
         }
         release {
-            storeFile file('/Users/nihontabako/Desktop/Projects/Nicole/keyStore')
+            storeFile file("${rootDir}/keyStore")
             storePassword 'nicole1111'
             keyAlias 'key0'
             keyPassword 'nicole1111'
